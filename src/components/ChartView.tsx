@@ -518,83 +518,89 @@ export function ChartView({ birthInfo }: ChartViewProps) {
         </p>
       ) : null}
 
-      <div className="overflow-hidden rounded-md border border-stone-800 bg-stone-200 p-2 shadow-2xl shadow-black/30 sm:p-3">
-        <div
-          ref={chartCanvasRef}
-          className={`chart-canvas clickable-palace-mode chart-mode-${chartMode} mx-auto w-full max-w-[1024px]`}
-          onClick={handleChartClick}
-          onBlur={handleChartBlur}
-          onFocus={handleChartFocus}
-          onKeyDown={handleChartKeyDown}
-          onMouseLeave={handleChartMouseLeave}
-          onMouseOver={handleChartMouseOver}
-        >
-          <Iztrolabe
-            {...chartProps}
-            horoscopeDate={transitDate}
-            horoscopeHour={transitHour}
-          />
-        </div>
-      </div>
-
-      {chartMode === "simple" && palaceTooltip ? (
-        <section className="palace-tooltip-panel" aria-live="polite">
-          <div>
-            <p className="section-kicker">Palace Detail</p>
-            <h3>{palaceTooltip.title}</h3>
+      <div className="chart-workspace">
+        <div className="chart-main-column">
+          <div className="chart-frame overflow-hidden rounded-md border border-stone-800 bg-stone-200 p-2 shadow-2xl shadow-black/30 sm:p-3">
+            <div
+              ref={chartCanvasRef}
+              className={`chart-canvas clickable-palace-mode chart-mode-${chartMode} mx-auto w-full max-w-[1024px]`}
+              onClick={handleChartClick}
+              onBlur={handleChartBlur}
+              onFocus={handleChartFocus}
+              onKeyDown={handleChartKeyDown}
+              onMouseLeave={handleChartMouseLeave}
+              onMouseOver={handleChartMouseOver}
+            >
+              <Iztrolabe
+                {...chartProps}
+                horoscopeDate={transitDate}
+                horoscopeHour={transitHour}
+              />
+            </div>
           </div>
-          <dl>
-            {palaceTooltip.sections.map((section) => (
-              <div key={section.label}>
-                <dt>{section.label}</dt>
-                <dd>{section.value}</dd>
+
+          {chartMode === "simple" && palaceTooltip ? (
+            <section className="palace-tooltip-panel" aria-live="polite">
+              <div>
+                <p className="section-kicker">Palace Detail</p>
+                <h3>{palaceTooltip.title}</h3>
               </div>
-            ))}
-          </dl>
-        </section>
-      ) : null}
+              <dl>
+                {palaceTooltip.sections.map((section) => (
+                  <div key={section.label}>
+                    <dt>{section.label}</dt>
+                    <dd>{section.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          ) : null}
 
-      {chartMode === "debug" ? (
-        <section className="chart-debug-panel">
-          <div>
-            <p className="section-kicker">Debug</p>
-            <h3>宫位原始字段与显示规则</h3>
-            <p>
-              simple: majorStars + mutagen + decadal + palace name +
-              heavenlyStem/earthlyBranch
-            </p>
-          </div>
-          <div className="chart-debug-grid">
-            {astrolabe.palaces.map((palace) => (
-              <article key={palace.index}>
-                <h4>
-                  {palace.index}. {palace.name} {palace.heavenlyStem}
-                  {palace.earthlyBranch}
-                </h4>
-                <pre>{getDebugPalaceSummary(palace).join("\n")}</pre>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
+          {chartMode === "debug" ? (
+            <section className="chart-debug-panel">
+              <div>
+                <p className="section-kicker">Debug</p>
+                <h3>宫位原始字段与显示规则</h3>
+                <p>
+                  simple: majorStars + mutagen + decadal + palace name +
+                  heavenlyStem/earthlyBranch
+                </p>
+              </div>
+              <div className="chart-debug-grid">
+                {astrolabe.palaces.map((palace) => (
+                  <article key={palace.index}>
+                    <h4>
+                      {palace.index}. {palace.name} {palace.heavenlyStem}
+                      {palace.earthlyBranch}
+                    </h4>
+                    <pre>{getDebugPalaceSummary(palace).join("\n")}</pre>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </div>
 
-      <TransitControls
-        astrolabe={astrolabe}
-        transitDate={transitDate}
-        transitHour={transitHour}
-        activeScope={transitContext.scope}
-        onTransitDateChange={setTransitDate}
-        onTransitHourChange={setTransitHour}
-        onTransitContextChange={setTransitContext}
-      />
+        <aside className="chart-side-column" aria-label="流年设置与解读">
+          <TransitControls
+            astrolabe={astrolabe}
+            transitDate={transitDate}
+            transitHour={transitHour}
+            activeScope={transitContext.scope}
+            onTransitDateChange={setTransitDate}
+            onTransitHourChange={setTransitHour}
+            onTransitContextChange={setTransitContext}
+          />
 
-      <InterpretationPanel
-        astrolabe={astrolabe}
-        transitContext={transitContext}
-        targetDate={transitDate}
-        transitHour={transitHour}
-        selectedPalaceId={selectedPalaceIndex}
-      />
+          <InterpretationPanel
+            astrolabe={astrolabe}
+            transitContext={transitContext}
+            targetDate={transitDate}
+            transitHour={transitHour}
+            selectedPalaceId={selectedPalaceIndex}
+          />
+        </aside>
+      </div>
     </section>
   );
 }

@@ -3,7 +3,12 @@
 import { useMemo } from "react";
 import { interpret, resolveInterpretationScope } from "@/lib/interpretation/interpret";
 import type { AstrolabeResult } from "@/lib/astrolabe";
-import type { InterpretationResult, TransitContext } from "@/types/interpretation";
+import type {
+  InterpretationResult,
+  InterpretationSection,
+  PalaceBrief,
+  TransitContext,
+} from "@/types/interpretation";
 
 type InterpretationPanelProps = {
   astrolabe: AstrolabeResult;
@@ -25,21 +30,51 @@ const SECTION_LABELS: Array<{ key: SectionKey; title: string }> = [
   { key: "advice", title: "行动建议" },
 ];
 
-function InterpretationCard({
-  title,
-  items,
-}: {
-  title: string;
-  items: string[];
-}) {
+function PalaceGroup({ label, palaces }: { label: string; palaces: PalaceBrief[] }) {
+  return (
+    <div className="interpretation-palace-group">
+      <span>{label}</span>
+      {palaces.length > 0 ? (
+        palaces.map((palace) => (
+          <b key={palace.palaceName} title={palace.reason}>
+            {palace.palaceName}
+            <small>{palace.score}</small>
+          </b>
+        ))
+      ) : (
+        <b>暂无明显集中点</b>
+      )}
+    </div>
+  );
+}
+
+function InterpretationCard({ section }: { section: InterpretationSection }) {
   return (
     <article className="interpretation-card">
-      <h3>{title}</h3>
-      <ul>
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
+      <h3>{section.title}</h3>
+
+      <div className="interpretation-card-block">
+        <span>结论</span>
+        <p>{section.conclusion}</p>
+      </div>
+
+      <div className="interpretation-card-block">
+        <span>依据</span>
+        <ol>
+          {section.evidences.map((evidence) => (
+            <li key={evidence}>{evidence}</li>
+          ))}
+        </ol>
+      </div>
+
+      <div className="interpretation-card-block">
+        <span>建议</span>
+        <ul>
+          {section.suggestions.map((suggestion) => (
+            <li key={suggestion}>{suggestion}</li>
+          ))}
+        </ul>
+      </div>
     </article>
   );
 }
@@ -80,17 +115,19 @@ export function InterpretationPanel({
       <p className="interpretation-disclaimer">{result.summary}</p>
 
       <div className="interpretation-palaces" aria-label="重点宫位">
-        <span>重点宫位</span>
-        {result.activatedPalaces.length > 0 ? (
-          result.activatedPalaces.map((palace) => <b key={palace}>{palace}</b>)
-        ) : (
-          <b>暂无明显集中点</b>
-        )}
+        <PalaceGroup label="主线宫位" palaces={result.primaryPalaces} />
+        <PalaceGroup label="辅助宫位" palaces={result.secondaryPalaces} />
       </div>
 
       <div className="interpretation-grid">
         {SECTION_LABELS.map(({ key, title }) => (
-          <InterpretationCard key={key} title={title} items={result.sections[key]} />
+          <InterpretationCard
+            key={key}
+            section={{
+              ...result.sections[key],
+              title,
+            }}
+          />
         ))}
       </div>
     </section>

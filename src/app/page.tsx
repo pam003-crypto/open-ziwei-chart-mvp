@@ -50,7 +50,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-stone-950 text-stone-100">
-      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6 px-4 py-6 lg:px-6">
+      <div className="mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-4 py-6 lg:px-6">
         <header
           className={`flex flex-col gap-2 border-b border-stone-800 pb-5 ${
             isMobileChartView ? "max-lg:hidden" : ""

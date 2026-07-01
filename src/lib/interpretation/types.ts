@@ -72,14 +72,27 @@ export type PalaceSignal = {
   messages: string[];
 };
 
+export type PalaceBrief = {
+  palaceName: string;
+  reason: string;
+  score: number;
+};
+
+export type InterpretationSection = {
+  title: string;
+  conclusion: string;
+  evidences: string[];
+  suggestions: string[];
+};
+
 export type InterpretationSections = {
-  overview: string[];
-  career: string[];
-  wealth: string[];
-  relationship: string[];
-  health: string[];
-  risk: string[];
-  advice: string[];
+  overview: InterpretationSection;
+  career: InterpretationSection;
+  wealth: InterpretationSection;
+  relationship: InterpretationSection;
+  health: InterpretationSection;
+  risk: InterpretationSection;
+  advice: InterpretationSection;
 };
 
 export type InterpretationResult = {
@@ -88,7 +101,8 @@ export type InterpretationResult = {
   score: number;
   level: InterpretationLevel;
   summary: string;
-  activatedPalaces: string[];
+  primaryPalaces: PalaceBrief[];
+  secondaryPalaces: PalaceBrief[];
   sections: InterpretationSections;
 };
 

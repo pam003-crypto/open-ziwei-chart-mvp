@@ -26,6 +26,12 @@ npm run dev
 npm run build
 ```
 
+## GitHub Pages
+
+项目已配置 GitHub Actions 静态部署。推送到 `main` 后会自动构建并发布到：
+
+[https://pam003-crypto.github.io/open-ziwei-chart-mvp/](https://pam003-crypto.github.io/open-ziwei-chart-mvp/)
+
 ## 当前功能
 
 - 出生信息输入

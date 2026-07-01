@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type FocusEvent,
   type KeyboardEvent,
   type MouseEvent,
 } from "react";
@@ -50,11 +51,37 @@ type ChartViewProps = {
   birthInfo: BirthInfo | null;
 };
 
+type ChartDisplayMode = "simple" | "full" | "debug";
+
+type Palace = AstrolabeResult["palaces"][number];
+type PalaceStar =
+  | Palace["majorStars"][number]
+  | Palace["minorStars"][number]
+  | Palace["adjectiveStars"][number];
+
+type PalaceTooltipViewModel = {
+  title: string;
+  sections: Array<{
+    label: string;
+    value: string;
+  }>;
+  debugLines: string[];
+};
+
 const CLICK_PALACE_CLASSES = [
   "click-focused-palace",
   "click-opposite-palace",
   "click-surrounded-palace",
 ] as const;
+
+const CHART_MODE_OPTIONS: Array<{
+  value: ChartDisplayMode;
+  label: string;
+}> = [
+  { value: "simple", label: "简洁" },
+  { value: "full", label: "完整" },
+  { value: "debug", label: "调试" },
+];
 
 const DEFAULT_TRANSIT_CONTEXT: TransitContext = {
   scope: "natal",
@@ -91,7 +118,98 @@ function getTargetPalace(target: EventTarget | null, root: HTMLElement): HTMLEle
   return palace instanceof HTMLElement && root.contains(palace) ? palace : null;
 }
 
-function syncClickablePalaces(root: HTMLElement, selectedPalaceIndex: number | null): void {
+function getPalaceByIndex(
+  astrolabe: AstrolabeResult,
+  index: number | null,
+): Palace | undefined {
+  if (index === null) {
+    return undefined;
+  }
+
+  return astrolabe.palaces.find((palace) => palace.index === index);
+}
+
+function formatStar(star: PalaceStar): string {
+  const brightness = star.brightness ? `(${star.brightness})` : "";
+  const mutagen = star.mutagen ? `化${star.mutagen}` : "";
+
+  return `${star.name}${brightness}${mutagen}`;
+}
+
+function formatStars(stars: PalaceStar[]): string {
+  return stars.length > 0 ? stars.map(formatStar).join("、") : "无";
+}
+
+function getPalaceTooltip(palace: Palace): PalaceTooltipViewModel {
+  const ageRange = palace.decadal.range.join(" - ");
+  const yearlyAges = palace.ages.join(" ");
+
+  return {
+    title: `${palace.name}（${palace.heavenlyStem}${palace.earthlyBranch}）`,
+    sections: [
+      { label: "主星", value: formatStars(palace.majorStars) },
+      { label: "辅星", value: formatStars(palace.minorStars) },
+      { label: "杂曜神煞", value: formatStars(palace.adjectiveStars) },
+      { label: "大限", value: ageRange },
+      { label: "流年年龄", value: yearlyAges },
+      {
+        label: "十二神",
+        value: [
+          palace.changsheng12 ? `长生：${palace.changsheng12}` : "",
+          palace.boshi12 ? `博士：${palace.boshi12}` : "",
+          palace.jiangqian12 ? `将前：${palace.jiangqian12}` : "",
+          palace.suiqian12 ? `岁前：${palace.suiqian12}` : "",
+        ]
+          .filter(Boolean)
+          .join(" / "),
+      },
+      {
+        label: "标记",
+        value: [
+          palace.isOriginalPalace ? "命宫" : "",
+          palace.isBodyPalace ? "身宫" : "",
+        ]
+          .filter(Boolean)
+          .join("、") || "无",
+      },
+    ],
+    debugLines: getDebugPalaceSummary(palace),
+  };
+}
+
+function getDebugPalaceSummary(palace: Palace): string[] {
+  return [
+    `index: ${palace.index}`,
+    `name: ${palace.name}`,
+    `stemBranch: ${palace.heavenlyStem}${palace.earthlyBranch}`,
+    `isOriginalPalace: ${String(palace.isOriginalPalace)}`,
+    `isBodyPalace: ${String(palace.isBodyPalace)}`,
+    `majorStars: ${formatStars(palace.majorStars)}`,
+    `minorStars: ${formatStars(palace.minorStars)}`,
+    `adjectiveStars: ${formatStars(palace.adjectiveStars)}`,
+    `changsheng12: ${palace.changsheng12 || ""}`,
+    `boshi12: ${palace.boshi12 || ""}`,
+    `jiangqian12: ${palace.jiangqian12 || ""}`,
+    `suiqian12: ${palace.suiqian12 || ""}`,
+    `decadal: ${palace.decadal.range.join(" - ")} ${palace.decadal.heavenlyStem}${palace.decadal.earthlyBranch}`,
+    `ages: ${palace.ages.join(", ")}`,
+    "simple rule: majorStars + mutagen + decadal + palace name + heavenlyStem/earthlyBranch",
+  ];
+}
+
+function getTooltipText(tooltip: PalaceTooltipViewModel): string {
+  return [
+    tooltip.title,
+    ...tooltip.sections.map((section) => `${section.label}: ${section.value}`),
+  ].join("\n");
+}
+
+function syncClickablePalaces(
+  root: HTMLElement,
+  selectedPalaceIndex: number | null,
+  astrolabe?: AstrolabeResult,
+  enableTooltip = false,
+): void {
   const oppositeIndex =
     selectedPalaceIndex === null ? null : normalizePalaceIndex(selectedPalaceIndex + 6);
   const surroundedIndexes =
@@ -118,6 +236,15 @@ function syncClickablePalaces(root: HTMLElement, selectedPalaceIndex: number | n
     const palaceName = palace.querySelector(".iztro-palace-name")?.textContent?.trim();
     palace.dataset.palaceIndex = String(palaceIndex);
     palace.setAttribute("aria-label", `${palaceName || `第${palaceIndex + 1}宫`}，点击显示三方四正`);
+
+    if (enableTooltip && astrolabe) {
+      const tooltipPalace = getPalaceByIndex(astrolabe, palaceIndex);
+      if (tooltipPalace) {
+        palace.setAttribute("title", getTooltipText(getPalaceTooltip(tooltipPalace)));
+      }
+    } else {
+      palace.removeAttribute("title");
+    }
 
     if (selectedPalaceIndex !== null) {
       if (palaceIndex === selectedPalaceIndex) {
@@ -147,6 +274,8 @@ function InfoItem({ label, value }: { label: string; value: string }) {
 export function ChartView({ birthInfo }: ChartViewProps) {
   const chartCanvasRef = useRef<HTMLDivElement>(null);
   const [selectedPalaceIndex, setSelectedPalaceIndex] = useState<number | null>(null);
+  const [hoveredPalaceIndex, setHoveredPalaceIndex] = useState<number | null>(null);
+  const [chartMode, setChartMode] = useState<ChartDisplayMode>("simple");
   const [transitDate, setTransitDate] = useState<Date>(() => new Date());
   const [transitHour, setTransitHour] = useState<number>(0);
   const [transitContext, setTransitContext] = useState<TransitContext>(
@@ -172,6 +301,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
   useEffect(() => {
     setSelectedPalaceIndex(null);
+    setHoveredPalaceIndex(null);
 
     if (chartState.ok) {
       setTransitDate(new Date());
@@ -187,10 +317,20 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       return;
     }
 
-    syncClickablePalaces(root, selectedPalaceIndex);
+    syncClickablePalaces(
+      root,
+      selectedPalaceIndex,
+      chartState.ok ? chartState.astrolabe : undefined,
+      chartMode === "simple",
+    );
 
     const observer = new MutationObserver(() => {
-      syncClickablePalaces(root, selectedPalaceIndex);
+      syncClickablePalaces(
+        root,
+        selectedPalaceIndex,
+        chartState.ok ? chartState.astrolabe : undefined,
+        chartMode === "simple",
+      );
     });
 
     observer.observe(root, {
@@ -203,7 +343,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
     return () => {
       observer.disconnect();
     };
-  }, [selectedPalaceIndex, chartState]);
+  }, [selectedPalaceIndex, chartState, chartMode]);
 
   const toggleSelectedPalace = useCallback((palace: HTMLElement) => {
     const palaceIndex = getPalaceIndex(palace);
@@ -233,6 +373,45 @@ export function ChartView({ birthInfo }: ChartViewProps) {
     },
     [toggleSelectedPalace],
   );
+
+  const handleChartMouseOver = useCallback((event: MouseEvent<HTMLDivElement>) => {
+    const root = chartCanvasRef.current;
+
+    if (!root) {
+      return;
+    }
+
+    const palace = getTargetPalace(event.target, root);
+    const palaceIndex = palace ? getPalaceIndex(palace) : null;
+
+    setHoveredPalaceIndex(palaceIndex);
+  }, []);
+
+  const handleChartMouseLeave = useCallback(() => {
+    setHoveredPalaceIndex(null);
+  }, []);
+
+  const handleChartFocus = useCallback((event: FocusEvent<HTMLDivElement>) => {
+    const root = chartCanvasRef.current;
+
+    if (!root) {
+      return;
+    }
+
+    const palace = getTargetPalace(event.target, root);
+    const palaceIndex = palace ? getPalaceIndex(palace) : null;
+
+    setHoveredPalaceIndex(palaceIndex);
+  }, []);
+
+  const handleChartBlur = useCallback((event: FocusEvent<HTMLDivElement>) => {
+    const root = chartCanvasRef.current;
+    const nextTarget = event.relatedTarget;
+
+    if (!root || !(nextTarget instanceof Node) || !root.contains(nextTarget)) {
+      setHoveredPalaceIndex(null);
+    }
+  }, []);
 
   const handleChartKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
@@ -283,12 +462,33 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   }
 
   const { astrolabe, calendar, chartProps } = chartState;
+  const tooltipPalace = getPalaceByIndex(
+    astrolabe,
+    hoveredPalaceIndex ?? selectedPalaceIndex,
+  );
+  const palaceTooltip = tooltipPalace ? getPalaceTooltip(tooltipPalace) : null;
 
   return (
     <section className="chart-shell space-y-5">
-      <div>
-        <p className="section-kicker">Ziwei Chart</p>
-        <h2 className="section-title mt-2">排盘结果</h2>
+      <div className="chart-heading">
+        <div>
+          <p className="section-kicker">Ziwei Chart</p>
+          <h2 className="section-title mt-2">排盘结果</h2>
+        </div>
+
+        <div className="chart-mode-switch" aria-label="命盘显示模式">
+          {CHART_MODE_OPTIONS.map((option) => (
+            <button
+              aria-pressed={chartMode === option.value}
+              className={chartMode === option.value ? "is-active" : ""}
+              key={option.value}
+              onClick={() => setChartMode(option.value)}
+              type="button"
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <dl className="grid gap-4 rounded-md border border-stone-800 bg-stone-950/70 p-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -321,9 +521,13 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       <div className="overflow-hidden rounded-md border border-stone-800 bg-stone-200 p-2 shadow-2xl shadow-black/30 sm:p-3">
         <div
           ref={chartCanvasRef}
-          className="chart-canvas clickable-palace-mode mx-auto w-full max-w-[1024px]"
+          className={`chart-canvas clickable-palace-mode chart-mode-${chartMode} mx-auto w-full max-w-[1024px]`}
           onClick={handleChartClick}
+          onBlur={handleChartBlur}
+          onFocus={handleChartFocus}
           onKeyDown={handleChartKeyDown}
+          onMouseLeave={handleChartMouseLeave}
+          onMouseOver={handleChartMouseOver}
         >
           <Iztrolabe
             {...chartProps}
@@ -332,6 +536,47 @@ export function ChartView({ birthInfo }: ChartViewProps) {
           />
         </div>
       </div>
+
+      {chartMode === "simple" && palaceTooltip ? (
+        <section className="palace-tooltip-panel" aria-live="polite">
+          <div>
+            <p className="section-kicker">Palace Detail</p>
+            <h3>{palaceTooltip.title}</h3>
+          </div>
+          <dl>
+            {palaceTooltip.sections.map((section) => (
+              <div key={section.label}>
+                <dt>{section.label}</dt>
+                <dd>{section.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ) : null}
+
+      {chartMode === "debug" ? (
+        <section className="chart-debug-panel">
+          <div>
+            <p className="section-kicker">Debug</p>
+            <h3>宫位原始字段与显示规则</h3>
+            <p>
+              simple: majorStars + mutagen + decadal + palace name +
+              heavenlyStem/earthlyBranch
+            </p>
+          </div>
+          <div className="chart-debug-grid">
+            {astrolabe.palaces.map((palace) => (
+              <article key={palace.index}>
+                <h4>
+                  {palace.index}. {palace.name} {palace.heavenlyStem}
+                  {palace.earthlyBranch}
+                </h4>
+                <pre>{getDebugPalaceSummary(palace).join("\n")}</pre>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <TransitControls
         astrolabe={astrolabe}

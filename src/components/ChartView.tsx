@@ -20,6 +20,11 @@ import {
 import { getCalendarSummary, type CalendarSummary } from "@/lib/calendar";
 import { InterpretationPanel } from "./InterpretationPanel";
 import { TransitControls } from "./TransitControls";
+import { BirthInfoSummary } from "./mobile/BirthInfoSummary";
+import { CurrentContextBar } from "./mobile/CurrentContextBar";
+import { MobileChartView } from "./mobile/MobileChartView";
+import { MobileTimeNavigator } from "./mobile/MobileTimeNavigator";
+import { MobileTopBar } from "./mobile/MobileTopBar";
 import type { BirthInfo } from "@/types/birth";
 import type { TransitContext } from "@/types/interpretation";
 
@@ -52,6 +57,7 @@ type ChartViewProps = {
 };
 
 type ChartDisplayMode = "simple" | "full" | "debug";
+type MobileChartMode = "cards" | "full";
 
 type Palace = AstrolabeResult["palaces"][number];
 type PalaceStar =
@@ -276,6 +282,8 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   const [selectedPalaceIndex, setSelectedPalaceIndex] = useState<number | null>(null);
   const [hoveredPalaceIndex, setHoveredPalaceIndex] = useState<number | null>(null);
   const [chartMode, setChartMode] = useState<ChartDisplayMode>("simple");
+  const [mobileChartMode, setMobileChartMode] = useState<MobileChartMode>("cards");
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
   const [transitDate, setTransitDate] = useState<Date>(() => new Date());
   const [transitHour, setTransitHour] = useState<number>(0);
   const [transitContext, setTransitContext] = useState<TransitContext>(
@@ -300,8 +308,21 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   }, [birthInfo]);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const syncMobileState = () => setIsMobileLayout(mediaQuery.matches);
+
+    syncMobileState();
+    mediaQuery.addEventListener("change", syncMobileState);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncMobileState);
+    };
+  }, []);
+
+  useEffect(() => {
     setSelectedPalaceIndex(null);
     setHoveredPalaceIndex(null);
+    setMobileChartMode("cards");
 
     if (chartState.ok) {
       setTransitDate(new Date());
@@ -437,6 +458,12 @@ export function ChartView({ birthInfo }: ChartViewProps) {
     [toggleSelectedPalace],
   );
 
+  const handleMobilePalaceSelect = useCallback((palaceIndex: number) => {
+    setSelectedPalaceIndex((currentIndex) =>
+      currentIndex === palaceIndex ? null : palaceIndex,
+    );
+  }, []);
+
   if (!birthInfo) {
     return (
       <section className="chart-shell flex min-h-[360px] items-center justify-center text-center">
@@ -467,6 +494,75 @@ export function ChartView({ birthInfo }: ChartViewProps) {
     hoveredPalaceIndex ?? selectedPalaceIndex,
   );
   const palaceTooltip = tooltipPalace ? getPalaceTooltip(tooltipPalace) : null;
+  const renderChartCanvas = (className: string) => (
+    <div
+      ref={chartCanvasRef}
+      className={`chart-canvas clickable-palace-mode chart-mode-${chartMode} ${className}`}
+      onClick={handleChartClick}
+      onBlur={handleChartBlur}
+      onFocus={handleChartFocus}
+      onKeyDown={handleChartKeyDown}
+      onMouseLeave={handleChartMouseLeave}
+      onMouseOver={handleChartMouseOver}
+    >
+      <Iztrolabe
+        {...chartProps}
+        horoscopeDate={transitDate}
+        horoscopeHour={transitHour}
+      />
+    </div>
+  );
+
+  if (isMobileLayout) {
+    return (
+      <section className="chart-shell mobile-chart-shell">
+        <div className="mobile-layout">
+          <MobileTopBar value={chartMode} onChange={setChartMode} />
+
+          <CurrentContextBar
+            targetDate={transitDate}
+            transitContext={transitContext}
+          />
+
+          <InterpretationPanel
+            astrolabe={astrolabe}
+            selectedPalaceId={selectedPalaceIndex}
+            targetDate={transitDate}
+            transitContext={transitContext}
+            transitHour={transitHour}
+            variant="mobile"
+          />
+
+          <MobileTimeNavigator
+            astrolabe={astrolabe}
+            transitDate={transitDate}
+            transitHour={transitHour}
+            activeScope={transitContext.scope}
+            onTransitDateChange={setTransitDate}
+            onTransitHourChange={setTransitHour}
+            onTransitContextChange={setTransitContext}
+          />
+
+          <MobileChartView
+            astrolabe={astrolabe}
+            chartMode={chartMode}
+            fullChart={renderChartCanvas("mobile-chart-canvas")}
+            mobileChartMode={mobileChartMode}
+            onMobileChartModeChange={setMobileChartMode}
+            onPalaceSelect={handleMobilePalaceSelect}
+            selectedPalaceIndex={selectedPalaceIndex}
+            transitContext={transitContext}
+          />
+
+          <BirthInfoSummary
+            astrolabe={astrolabe}
+            birthInfo={birthInfo}
+            calendar={calendar}
+          />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="chart-shell space-y-5">
@@ -521,22 +617,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       <div className="chart-workspace">
         <div className="chart-main-column">
           <div className="chart-frame overflow-hidden rounded-md border border-stone-800 bg-stone-200 p-2 shadow-2xl shadow-black/30 sm:p-3">
-            <div
-              ref={chartCanvasRef}
-              className={`chart-canvas clickable-palace-mode chart-mode-${chartMode} mx-auto w-full max-w-[1024px]`}
-              onClick={handleChartClick}
-              onBlur={handleChartBlur}
-              onFocus={handleChartFocus}
-              onKeyDown={handleChartKeyDown}
-              onMouseLeave={handleChartMouseLeave}
-              onMouseOver={handleChartMouseOver}
-            >
-              <Iztrolabe
-                {...chartProps}
-                horoscopeDate={transitDate}
-                horoscopeHour={transitHour}
-              />
-            </div>
+            {renderChartCanvas("mx-auto w-full max-w-[1024px]")}
           </div>
 
           {chartMode === "simple" && palaceTooltip ? (

@@ -5,7 +5,7 @@ import type { AstrolabeResult } from "@/lib/astrolabe";
 import { BIRTH_HOURS } from "@/types/birth";
 import type { TransitContext } from "@/types/interpretation";
 
-type TransitControlsProps = {
+export type TransitControlsProps = {
   astrolabe: AstrolabeResult;
   transitDate: Date;
   transitHour: number;
@@ -15,12 +15,19 @@ type TransitControlsProps = {
   onTransitContextChange?: (context: TransitContext) => void;
 };
 
-type TransitCell = {
+export type TransitCell = {
   key: string;
   title: string;
   subtitle?: string;
   active?: boolean;
   onClick?: () => void;
+};
+
+export type TransitRowData = {
+  key: "decadal" | "yearly" | "monthly" | "daily" | "hourly";
+  label: string;
+  cells: TransitCell[];
+  compact?: boolean;
 };
 
 const LUNAR_MONTHS = [
@@ -146,7 +153,7 @@ function TransitRow({
   );
 }
 
-export function TransitControls({
+export function buildTransitRows({
   astrolabe,
   transitDate,
   transitHour,
@@ -154,7 +161,7 @@ export function TransitControls({
   onTransitDateChange,
   onTransitHourChange,
   onTransitContextChange,
-}: TransitControlsProps) {
+}: TransitControlsProps): TransitRowData[] {
   const birthYear = getBirthYear(astrolabe);
   const lunarParts = getLunarParts(transitDate);
   const selectedYear = transitDate.getFullYear();
@@ -273,13 +280,28 @@ export function TransitControls({
     },
   }));
 
+  return [
+    { key: "decadal", label: "大限", cells: decadalCells },
+    { key: "yearly", label: "流年", cells: yearCells },
+    { key: "monthly", label: "流月", cells: monthCells, compact: true },
+    { key: "daily", label: "流日", cells: dayCells, compact: true },
+    { key: "hourly", label: "流时", cells: hourCells, compact: true },
+  ];
+}
+
+export function TransitControls(props: TransitControlsProps) {
+  const rows = buildTransitRows(props);
+
   return (
     <div className="transit-panel" aria-label="流年流月流日流时选择">
-      <TransitRow label="大限" cells={decadalCells} />
-      <TransitRow label="流年" cells={yearCells} />
-      <TransitRow label="流月" cells={monthCells} compact />
-      <TransitRow label="流日" cells={dayCells} compact />
-      <TransitRow label="流时" cells={hourCells} compact />
+      {rows.map((row) => (
+        <TransitRow
+          cells={row.cells}
+          compact={row.compact}
+          key={row.key}
+          label={row.label}
+        />
+      ))}
     </div>
   );
 }

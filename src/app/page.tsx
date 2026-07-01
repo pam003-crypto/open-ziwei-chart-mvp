@@ -50,7 +50,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-stone-950 text-stone-100">
-      <div className="mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-4 py-6 lg:px-6">
+      <div className="mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-3 py-3 md:px-4 md:py-6 lg:px-6">
         <header
           className={`flex flex-col gap-2 border-b border-stone-800 pb-5 ${
             isMobileChartView ? "max-lg:hidden" : ""
@@ -82,15 +82,28 @@ export default function Home() {
               mobileView === "input" || !birthInfo ? "max-lg:hidden" : undefined
             }
           >
-            {isMobileChartView ? (
-              <div className="mb-4 max-lg:block lg:hidden">
-                <button className="secondary-action" type="button" onClick={handleBackToInput}>
-                  返回输入
-                </button>
-              </div>
-            ) : null}
-
             <ChartView birthInfo={birthInfo} />
+
+            {isMobileChartView ? (
+              <details className="mobile-collapse-card mobile-profile-manager mt-4 md:hidden">
+                <summary>命例管理</summary>
+                <div className="mobile-profile-actions">
+                  <button
+                    className="secondary-action w-full"
+                    type="button"
+                    onClick={handleBackToInput}
+                  >
+                    返回输入修改
+                  </button>
+                  <ProfileList
+                    currentBirthInfo={birthInfo}
+                    currentProfileId={currentProfileId}
+                    onLoad={handleLoadProfile}
+                    onSaved={handleSaved}
+                  />
+                </div>
+              </details>
+            ) : null}
           </div>
         </div>
       </div>

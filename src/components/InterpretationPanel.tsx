@@ -16,6 +16,7 @@ type InterpretationPanelProps = {
   targetDate: Date;
   transitHour: number;
   selectedPalaceId?: number | string | null;
+  variant?: "desktop" | "mobile";
 };
 
 type SectionKey = keyof InterpretationResult["sections"];
@@ -48,11 +49,9 @@ function PalaceGroup({ label, palaces }: { label: string; palaces: PalaceBrief[]
   );
 }
 
-function InterpretationCard({ section }: { section: InterpretationSection }) {
+function InterpretationContent({ section }: { section: InterpretationSection }) {
   return (
-    <article className="interpretation-card">
-      <h3>{section.title}</h3>
-
+    <>
       <div className="interpretation-card-block">
         <span>结论</span>
         <p>{section.conclusion}</p>
@@ -75,6 +74,34 @@ function InterpretationCard({ section }: { section: InterpretationSection }) {
           ))}
         </ul>
       </div>
+    </>
+  );
+}
+
+function InterpretationCard({
+  section,
+  sectionKey,
+  variant,
+}: {
+  section: InterpretationSection;
+  sectionKey: SectionKey;
+  variant: "desktop" | "mobile";
+}) {
+  if (variant === "mobile") {
+    const defaultOpen = sectionKey === "overview" || sectionKey === "advice";
+
+    return (
+      <details className="interpretation-card interpretation-accordion" open={defaultOpen}>
+        <summary>{section.title}</summary>
+        <InterpretationContent section={section} />
+      </details>
+    );
+  }
+
+  return (
+    <article className="interpretation-card">
+      <h3>{section.title}</h3>
+      <InterpretationContent section={section} />
     </article>
   );
 }
@@ -85,6 +112,7 @@ export function InterpretationPanel({
   targetDate,
   transitHour,
   selectedPalaceId,
+  variant = "desktop",
 }: InterpretationPanelProps) {
   const result = useMemo(
     () =>
@@ -100,7 +128,7 @@ export function InterpretationPanel({
   );
 
   return (
-    <section className="interpretation-panel">
+    <section className={`interpretation-panel is-${variant}`}>
       <div className="interpretation-header">
         <div>
           <p className="section-kicker">Interpretation</p>
@@ -119,10 +147,12 @@ export function InterpretationPanel({
         <PalaceGroup label="辅助宫位" palaces={result.secondaryPalaces} />
       </div>
 
-      <div className="interpretation-grid">
+      <div className={variant === "mobile" ? "interpretation-grid is-accordion" : "interpretation-grid"}>
         {SECTION_LABELS.map(({ key, title }) => (
           <InterpretationCard
             key={key}
+            sectionKey={key}
+            variant={variant}
             section={{
               ...result.sections[key],
               title,

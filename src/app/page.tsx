@@ -1,0 +1,99 @@
+"use client";
+
+import { useState } from "react";
+import { BirthForm } from "@/components/BirthForm";
+import { ChartView } from "@/components/ChartView";
+import { ProfileList } from "@/components/ProfileList";
+import type { BirthInfo } from "@/types/birth";
+import type { Profile } from "@/types/profile";
+
+type MobileView = "input" | "chart";
+
+export default function Home() {
+  const [birthInfo, setBirthInfo] = useState<BirthInfo | null>(null);
+  const [formValue, setFormValue] = useState<BirthInfo | undefined>();
+  const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
+  const [mobileView, setMobileView] = useState<MobileView>("input");
+
+  function showMobileChart() {
+    setMobileView("chart");
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  function handleSubmit(nextBirthInfo: BirthInfo) {
+    setBirthInfo(nextBirthInfo);
+    setFormValue(nextBirthInfo);
+    showMobileChart();
+  }
+
+  function handleLoadProfile(profile: Profile) {
+    setBirthInfo(profile.birthInfo);
+    setFormValue(profile.birthInfo);
+    setCurrentProfileId(profile.id);
+    showMobileChart();
+  }
+
+  function handleSaved(profile: Profile) {
+    setCurrentProfileId(profile.id);
+  }
+
+  function handleBackToInput() {
+    setMobileView("input");
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  const isMobileChartView = mobileView === "chart" && birthInfo !== null;
+
+  return (
+    <main className="min-h-screen bg-stone-950 text-stone-100">
+      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6 px-4 py-6 lg:px-6">
+        <header
+          className={`flex flex-col gap-2 border-b border-stone-800 pb-5 ${
+            isMobileChartView ? "max-lg:hidden" : ""
+          }`}
+        >
+          <p className="section-kicker">Open Ziwei Chart MVP</p>
+          <h1 className="text-2xl font-semibold tracking-normal text-stone-50 sm:text-3xl">
+            紫微斗数排盘工具
+          </h1>
+        </header>
+
+        <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <aside
+            className={`space-y-6 ${
+              isMobileChartView ? "max-lg:hidden" : ""
+            }`}
+          >
+            <BirthForm initialValue={formValue} onSubmit={handleSubmit} />
+            <ProfileList
+              currentBirthInfo={birthInfo}
+              currentProfileId={currentProfileId}
+              onLoad={handleLoadProfile}
+              onSaved={handleSaved}
+            />
+          </aside>
+
+          <div
+            className={
+              mobileView === "input" || !birthInfo ? "max-lg:hidden" : undefined
+            }
+          >
+            {isMobileChartView ? (
+              <div className="mb-4 max-lg:block lg:hidden">
+                <button className="secondary-action" type="button" onClick={handleBackToInput}>
+                  返回输入
+                </button>
+              </div>
+            ) : null}
+
+            <ChartView birthInfo={birthInfo} />
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}

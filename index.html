@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CosAI Studio</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="side-rail" aria-label="核心模块">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <div>
+            <strong>CosAI Studio</strong>
+            <span>次元后期工坊</span>
+          </div>
+        </div>
+
+        <nav class="module-nav" aria-label="修图模块">
+          <button class="module-tab active" type="button" data-module="base">
+            <span aria-hidden="true">01</span>
+            基础增强
+          </button>
+          <button class="module-tab" type="button" data-module="skin">
+            <span aria-hidden="true">02</span>
+            皮肤精修
+          </button>
+          <button class="module-tab" type="button" data-module="face">
+            <span aria-hidden="true">03</span>
+            二次元修容
+          </button>
+          <button class="module-tab" type="button" data-module="hair">
+            <span aria-hidden="true">04</span>
+            假发修复
+          </button>
+          <button class="module-tab" type="button" data-module="costume">
+            <span aria-hidden="true">05</span>
+            服装道具
+          </button>
+          <button class="module-tab" type="button" data-module="background">
+            <span aria-hidden="true">06</span>
+            背景优化
+          </button>
+        </nav>
+      </aside>
+
+      <section class="workspace" aria-label="AI 后期修图工作台">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Cosplay Portrait Retouching</p>
+            <h1>二次元人像 AI 后期工作台</h1>
+          </div>
+          <div class="topbar-actions">
+            <label class="icon-button upload-button" for="photoInput" title="导入照片" aria-label="导入照片">
+              <input id="photoInput" type="file" accept="image/*" />
+              <span aria-hidden="true">+</span>
+            </label>
+            <button id="exportButton" class="primary-button" type="button">导出结果</button>
+          </div>
+        </header>
+
+        <section class="main-grid">
+          <section class="preview-panel" aria-label="图片预览">
+            <div class="preview-toolbar">
+              <div class="segmented" role="tablist" aria-label="预览模式">
+                <button class="active" type="button" data-view="compare">对比</button>
+                <button type="button" data-view="before">原图</button>
+                <button type="button" data-view="after">结果</button>
+              </div>
+              <div class="status-pill" id="statusPill">保真模式</div>
+            </div>
+
+            <div class="comparison" id="comparison">
+              <img id="beforeImage" class="image-layer before-layer" alt="原图预览" />
+              <img id="afterImage" class="image-layer after-layer" alt="修图结果预览" />
+              <div class="compare-handle" id="compareHandle" aria-hidden="true"></div>
+              <input
+                id="compareSlider"
+                class="compare-slider"
+                type="range"
+                min="0"
+                max="100"
+                value="52"
+                aria-label="前后对比位置"
+              />
+              <div class="image-label before-label">Before</div>
+              <div class="image-label after-label">After</div>
+            </div>
+
+            <div class="timeline-strip" aria-label="历史版本">
+              <button class="history-item active" type="button" data-history="原图">
+                <span></span>
+                原图
+              </button>
+              <button class="history-item" type="button" data-history="基础增强">
+                <span></span>
+                基础增强
+              </button>
+              <button class="history-item" type="button" data-history="CG感精修">
+                <span></span>
+                CG感精修
+              </button>
+              <button class="history-item" type="button" data-history="局部微调">
+                <span></span>
+                局部微调
+              </button>
+            </div>
+          </section>
+
+          <aside class="control-panel" aria-label="修图参数">
+            <section class="tool-section">
+              <div class="section-heading">
+                <p>修图目标</p>
+                <strong id="activeModuleTitle">基础增强</strong>
+              </div>
+
+              <div class="preset-grid" id="presetGrid" aria-label="预设">
+                <button class="preset-card active" type="button" data-preset="natural">
+                  <strong>自然正片</strong>
+                  <span>干净、保真、适合套图</span>
+                </button>
+                <button class="preset-card" type="button" data-preset="cg">
+                  <strong>游戏 CG</strong>
+                  <span>高光、质感、官图感</span>
+                </button>
+                <button class="preset-card" type="button" data-preset="painterly">
+                  <strong>厚涂海报</strong>
+                  <span>柔肤、浓郁、角色感</span>
+                </button>
+                <button class="preset-card" type="button" data-preset="figure">
+                  <strong>手办质感</strong>
+                  <span>锐利、塑形、冷光泽</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="tool-section">
+              <div class="slider-row">
+                <label for="strengthRange">修图强度</label>
+                <output id="strengthValue">52%</output>
+              </div>
+              <input id="strengthRange" class="range" type="range" min="0" max="100" value="52" />
+
+              <div class="level-strip" aria-label="强度级别">
+                <button type="button" data-strength="22">轻微</button>
+                <button class="active" type="button" data-strength="52">标准</button>
+                <button type="button" data-strength="78">海报级</button>
+              </div>
+            </section>
+
+            <section class="tool-section">
+              <div class="section-heading compact">
+                <p>局部范围</p>
+                <strong>智能蒙版</strong>
+              </div>
+              <div class="mask-grid">
+                <label><input type="checkbox" checked data-mask="face" /> 脸部</label>
+                <label><input type="checkbox" checked data-mask="skin" /> 皮肤</label>
+                <label><input type="checkbox" checked data-mask="hair" /> 假发</label>
+                <label><input type="checkbox" data-mask="costume" /> 服装</label>
+                <label><input type="checkbox" data-mask="prop" /> 道具</label>
+                <label><input type="checkbox" data-mask="background" /> 背景</label>
+              </div>
+            </section>
+
+            <section class="tool-section">
+              <div class="toggle-row">
+                <div>
+                  <strong>身份保留</strong>
+                  <span>不换脸，不改变五官结构</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked id="identityLock" />
+                  <span></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div>
+                  <strong>服装锁定</strong>
+                  <span>保留角色服装与道具结构</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked id="costumeLock" />
+                  <span></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="prompt-panel" aria-label="生成规则">
+              <div class="section-heading compact">
+                <p>Prompt Stack</p>
+                <strong>当前规则</strong>
+              </div>
+              <pre id="promptPreview"></pre>
+              <button id="generateButton" class="primary-button full-width" type="button">生成精修版本</button>
+            </section>
+          </aside>
+        </section>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

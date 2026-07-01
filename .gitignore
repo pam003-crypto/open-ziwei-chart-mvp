@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+dist
+.env*.local
+*.tsbuildinfo
+紫微斗数王亭之/*.pdf
+紫微斗数王亭之/*.doc
+紫微斗数王亭之/*.docx
+紫微斗数王亭之/*.txt

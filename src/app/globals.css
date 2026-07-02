@@ -973,9 +973,9 @@ button:disabled {
   align-items: center;
   overflow: hidden;
   border: 1px solid #292524;
-  border-radius: 8px;
+  border-radius: 14px;
   background: rgba(12, 10, 9, 0.72);
-  padding: 10px 12px;
+  padding: 12px 16px;
 }
 
 .mobile-context-bar strong,
@@ -988,8 +988,11 @@ button:disabled {
 
 .mobile-context-bar strong {
   color: #f5f5f4;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 800;
+  overflow-x: auto;
+  padding-bottom: 1px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-context-bar span {
@@ -1068,24 +1071,25 @@ button:disabled {
 
 .mobile-time-navigator {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   border: 1px solid #292524;
   border-radius: 18px;
   background: rgba(28, 25, 23, 0.72);
-  padding: 16px;
+  padding: 14px;
 }
 
 .mobile-time-row {
   display: grid;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
   width: 100%;
 }
 
 .mobile-time-row-label {
   color: #a7f3d0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
+  line-height: 1;
   letter-spacing: 0;
 }
 
@@ -1101,13 +1105,13 @@ button:disabled {
 
 .mobile-time-chip-list {
   display: inline-flex;
-  gap: 8px;
+  gap: 6px;
   padding-right: 12px;
 }
 
 .mobile-time-chip {
   display: inline-flex;
-  height: 44px;
+  height: 38px;
   min-width: auto;
   flex: 0 0 auto;
   flex-direction: column;
@@ -1119,18 +1123,18 @@ button:disabled {
   color: #f5f5f5;
   cursor: pointer;
   line-height: 1.05;
-  padding: 6px 14px;
+  padding: 4px 12px;
 }
 
 .mobile-time-chip-primary {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 
 .mobile-time-chip-secondary {
   color: #b7b7b7;
-  font-size: 11px;
-  margin-top: 2px;
+  font-size: 10px;
+  margin-top: 1px;
 }
 
 .mobile-time-chip:hover,
@@ -1193,6 +1197,7 @@ button:disabled {
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+  aspect-ratio: 3 / 4;
 }
 
 .responsive-chart-inner {
@@ -1209,19 +1214,31 @@ button:disabled {
 
 .responsive-chart-canvas .iztro-astrolabe {
   width: 960px;
-  height: 960px;
+  height: 1280px;
+  aspect-ratio: auto;
 }
 
 .responsive-chart-loading {
   display: flex;
   width: 960px;
-  height: 960px;
+  height: 1280px;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
   background: #e5e7eb;
   color: #64748b;
   font-size: 14px;
+}
+
+.responsive-chart-canvas .iztro-palace-center {
+  align-items: center;
+  justify-content: center;
+  padding: 4px !important;
+}
+
+.responsive-chart-canvas .iztro-palace-center > * {
+  transform: scale(0.82);
+  transform-origin: center;
 }
 
 .palace-zoom-backdrop {
@@ -1489,6 +1506,21 @@ button:disabled {
     padding-bottom: calc(env(safe-area-inset-bottom) + 88px);
   }
 
+  .mobile-page > div {
+    gap: 14px;
+    padding-top: 10px;
+  }
+
+  .mobile-page header {
+    gap: 4px;
+    padding-bottom: 12px;
+  }
+
+  .mobile-page header h1 {
+    font-size: 25px;
+    line-height: 1.15;
+  }
+
   .chart-shell.mobile-chart-shell {
     border: 0;
     border-radius: 0;
@@ -1498,6 +1530,67 @@ button:disabled {
 
   .mobile-chart-shell .section-kicker {
     font-size: 11px;
+  }
+
+  .mobile-birth-card {
+    border-radius: 18px;
+    padding: 18px;
+  }
+
+  .mobile-birth-card > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 14px;
+  }
+
+  .mobile-birth-card .section-title {
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .mobile-birth-card .mobile-form-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .mobile-birth-card .mobile-field {
+    gap: 6px;
+  }
+
+  .mobile-birth-card .mobile-field > span,
+  .mobile-birth-card .field-legend {
+    font-size: 13px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .mobile-birth-card .field-input {
+    height: 44px;
+    font-size: 15px;
+    padding: 0 12px;
+  }
+
+  .mobile-birth-card .mobile-segmented {
+    height: 44px;
+  }
+
+  .mobile-birth-card .mobile-segmented button {
+    min-height: 34px;
+    font-size: 15px;
+  }
+
+  .mobile-leap-checkbox {
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .mobile-note-field {
+    display: none;
+  }
+
+  .mobile-submit-button {
+    height: 48px;
+    margin-top: 4px !important;
+    padding: 0;
   }
 }
 

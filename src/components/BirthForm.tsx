@@ -72,13 +72,13 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
   }
 
   return (
-    <form className="tool-panel space-y-5" onSubmit={handleSubmit}>
+    <form className="tool-panel birth-form mobile-birth-card space-y-5" onSubmit={handleSubmit}>
       <div>
         <p className="section-kicker">Birth Info</p>
         <h2 className="section-title">出生信息</h2>
       </div>
 
-      <label className="field-label">
+      <label className="field-label mobile-field">
         <span>姓名</span>
         <input
           className="field-input"
@@ -89,10 +89,10 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
         />
       </label>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <fieldset className="space-y-2">
+      <div className="grid gap-4 sm:grid-cols-2 mobile-form-row">
+        <fieldset className="space-y-2 mobile-field">
           <legend className="field-legend">性别</legend>
-          <div className="segmented-control">
+          <div className="segmented-control mobile-segmented">
             {(["男", "女"] as const).map((gender) => (
               <button
                 className={form.gender === gender ? "is-active" : ""}
@@ -106,9 +106,9 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
           </div>
         </fieldset>
 
-        <fieldset className="space-y-2">
+        <fieldset className="space-y-2 mobile-field">
           <legend className="field-legend">历法</legend>
-          <div className="segmented-control">
+          <div className="segmented-control mobile-segmented">
             {[
               { label: "公历", value: "solar" },
               { label: "农历", value: "lunar" },
@@ -128,8 +128,8 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
         </fieldset>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="field-label">
+      <div className="grid gap-4 sm:grid-cols-2 mobile-form-row">
+        <label className="field-label mobile-field">
           <span>{dateLabel}</span>
           <input
             className="field-input"
@@ -141,7 +141,7 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
           />
         </label>
 
-        <label className="field-label">
+        <label className="field-label mobile-field">
           <span>出生时辰</span>
           <select
             className="field-input"
@@ -160,7 +160,7 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
       <label
         className={`inline-flex items-center gap-3 text-sm ${
           form.calendarType === "solar" ? "text-stone-500" : "text-stone-200"
-        }`}
+        } mobile-leap-checkbox`}
       >
         <input
           checked={form.calendarType === "lunar" && form.isLeapMonth}
@@ -172,7 +172,7 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
         是否闰月
       </label>
 
-      <label className="field-label">
+      <label className="field-label mobile-field mobile-note-field">
         <span>备注</span>
         <textarea
           className="field-input min-h-24 resize-y"
@@ -184,7 +184,7 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
 
       {error ? <p className="rounded-md bg-rose-500/10 px-3 py-2 text-sm text-rose-200">{error}</p> : null}
 
-      <button className="primary-action w-full" type="submit">
+      <button className="primary-action mobile-submit-button w-full" type="submit">
         开始排盘
       </button>
     </form>

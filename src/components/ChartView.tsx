@@ -19,7 +19,11 @@ import {
 } from "@/lib/astrolabe";
 import { getCalendarSummary, type CalendarSummary } from "@/lib/calendar";
 import { InterpretationPanel } from "./InterpretationPanel";
-import { TransitControls } from "./TransitControls";
+import {
+  getResolvedTimeSelection,
+  TransitControls,
+  type TimeSelection,
+} from "./TransitControls";
 import { ResponsiveFullChart } from "./chart/ResponsiveFullChart";
 import { BirthInfoSummary } from "./mobile/BirthInfoSummary";
 import { CurrentContextBar } from "./mobile/CurrentContextBar";
@@ -287,6 +291,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   const [transitContext, setTransitContext] = useState<TransitContext>(
     DEFAULT_TRANSIT_CONTEXT,
   );
+  const [timeSelection, setTimeSelection] = useState<TimeSelection>({});
 
   const chartState = useMemo<ChartState>(() => {
     if (!birthInfo) {
@@ -325,6 +330,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       setTransitDate(new Date());
       setTransitHour(chartState.chartProps.birthTime);
       setTransitContext(DEFAULT_TRANSIT_CONTEXT);
+      setTimeSelection({});
     }
   }, [birthInfo, chartState]);
 
@@ -486,6 +492,12 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   }
 
   const { astrolabe, calendar, chartProps } = chartState;
+  const resolvedTimeSelection = getResolvedTimeSelection(
+    astrolabe,
+    transitDate,
+    transitHour,
+    timeSelection,
+  );
   const tooltipPalace = getPalaceByIndex(
     astrolabe,
     hoveredPalaceIndex ?? selectedPalaceIndex,
@@ -518,6 +530,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
           <CurrentContextBar
             targetDate={transitDate}
+            timeSelection={resolvedTimeSelection}
             transitContext={transitContext}
           />
 
@@ -526,9 +539,11 @@ export function ChartView({ birthInfo }: ChartViewProps) {
             transitDate={transitDate}
             transitHour={transitHour}
             activeScope={transitContext.scope}
+            timeSelection={timeSelection}
             onTransitDateChange={setTransitDate}
             onTransitHourChange={setTransitHour}
             onTransitContextChange={setTransitContext}
+            onTimeSelectionChange={setTimeSelection}
           />
 
           <ResponsiveFullChart
@@ -665,9 +680,11 @@ export function ChartView({ birthInfo }: ChartViewProps) {
             transitDate={transitDate}
             transitHour={transitHour}
             activeScope={transitContext.scope}
+            timeSelection={timeSelection}
             onTransitDateChange={setTransitDate}
             onTransitHourChange={setTransitHour}
             onTransitContextChange={setTransitContext}
+            onTimeSelectionChange={setTimeSelection}
           />
 
           <InterpretationPanel

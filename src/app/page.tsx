@@ -69,12 +69,25 @@ export default function Home() {
             }`}
           >
             <BirthForm initialValue={formValue} onSubmit={handleSubmit} />
-            <ProfileList
-              currentBirthInfo={birthInfo}
-              currentProfileId={currentProfileId}
-              onLoad={handleLoadProfile}
-              onSaved={handleSaved}
-            />
+            <div className="max-md:hidden">
+              <ProfileList
+                currentBirthInfo={birthInfo}
+                currentProfileId={currentProfileId}
+                onLoad={handleLoadProfile}
+                onSaved={handleSaved}
+              />
+            </div>
+            <details className="mobile-collapse-card mobile-profile-manager md:hidden">
+              <summary>命例管理</summary>
+              <div className="mobile-profile-actions">
+                <ProfileList
+                  currentBirthInfo={birthInfo}
+                  currentProfileId={currentProfileId}
+                  onLoad={handleLoadProfile}
+                  onSaved={handleSaved}
+                />
+              </div>
+            </details>
           </aside>
 
           <div

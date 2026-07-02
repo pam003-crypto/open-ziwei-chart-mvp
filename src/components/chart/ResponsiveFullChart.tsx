@@ -44,7 +44,7 @@ type ResponsiveFullChartProps = {
 };
 
 const DESKTOP_BASE_WIDTH = 960;
-const DESKTOP_BASE_HEIGHT = 960;
+const DESKTOP_BASE_HEIGHT = 1280;
 const CLICK_PALACE_CLASSES = [
   "click-focused-palace",
   "click-opposite-palace",

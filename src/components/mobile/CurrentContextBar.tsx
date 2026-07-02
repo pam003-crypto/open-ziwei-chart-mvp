@@ -1,6 +1,7 @@
 "use client";
 
 import { Solar } from "lunar-javascript";
+import type { TimeSelection } from "@/components/TransitControls";
 import type { TransitContext } from "@/types/interpretation";
 
 const LUNAR_MONTHS = [
@@ -21,6 +22,7 @@ const LUNAR_MONTHS = [
 type CurrentContextBarProps = {
   transitContext: TransitContext;
   targetDate: Date;
+  timeSelection?: TimeSelection;
 };
 
 function getLunarContext(date: Date): { ganzhiYear: string; lunarMonth: string } {
@@ -57,14 +59,40 @@ function getContextTitle(context: TransitContext, date: Date): string {
   return context.label;
 }
 
-export function CurrentContextBar({ transitContext, targetDate }: CurrentContextBarProps) {
+function getSelectionTitle(
+  transitContext: TransitContext,
+  targetDate: Date,
+  timeSelection?: TimeSelection,
+): string {
+  const selectionLabels = [
+    timeSelection?.decadal?.label,
+    timeSelection?.yearly?.label,
+    timeSelection?.monthly?.label,
+    timeSelection?.daily?.label,
+    timeSelection?.hourly?.label,
+  ].filter(Boolean);
+
+  if (selectionLabels.length > 0) {
+    return selectionLabels.join(" ｜ ");
+  }
+
+  return getContextTitle(transitContext, targetDate);
+}
+
+export function CurrentContextBar({
+  timeSelection,
+  transitContext,
+  targetDate,
+}: CurrentContextBarProps) {
   const lunarContext = getLunarContext(targetDate);
+  const title = getSelectionTitle(transitContext, targetDate, timeSelection);
+  const hasTimeSelection = Boolean(timeSelection);
 
   return (
     <div className="mobile-context-bar" aria-label="当前查看状态">
-      <strong>{getContextTitle(transitContext, targetDate)}</strong>
-      <span>{lunarContext.ganzhiYear}</span>
-      <span>{lunarContext.lunarMonth}</span>
+      <strong>{title}</strong>
+      {!hasTimeSelection ? <span>{lunarContext.ganzhiYear}</span> : null}
+      {!hasTimeSelection ? <span>{lunarContext.lunarMonth}</span> : null}
     </div>
   );
 }

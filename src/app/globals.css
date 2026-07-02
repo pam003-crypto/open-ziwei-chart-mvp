@@ -1197,7 +1197,7 @@ button:disabled {
   width: 100%;
   max-width: 100%;
   overflow: hidden;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 9 / 16;
 }
 
 .responsive-chart-inner {
@@ -1214,14 +1214,14 @@ button:disabled {
 
 .responsive-chart-canvas .iztro-astrolabe {
   width: 960px;
-  height: 1280px;
+  height: 1706px;
   aspect-ratio: auto;
 }
 
 .responsive-chart-loading {
   display: flex;
   width: 960px;
-  height: 1280px;
+  height: 1706px;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
@@ -1233,11 +1233,13 @@ button:disabled {
 .responsive-chart-canvas .iztro-palace-center {
   align-items: center;
   justify-content: center;
-  padding: 4px !important;
+  padding: 3px !important;
+  font-size: clamp(6px, 1.35vw, 9px);
+  line-height: 1.12;
 }
 
 .responsive-chart-canvas .iztro-palace-center > * {
-  transform: scale(0.82);
+  transform: scale(0.74);
   transform-origin: center;
 }
 

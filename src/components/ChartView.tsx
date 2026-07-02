@@ -20,7 +20,7 @@ import {
 import { getCalendarSummary, type CalendarSummary } from "@/lib/calendar";
 import { InterpretationPanel } from "./InterpretationPanel";
 import {
-  getResolvedTimeSelection,
+  getFinestSelectedTimeItem,
   TransitControls,
   type TimeSelection,
 } from "./TransitControls";
@@ -335,6 +335,12 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   }, [birthInfo, chartState]);
 
   useEffect(() => {
+    const selectedTimeItem = getFinestSelectedTimeItem(timeSelection);
+
+    setTransitContext(selectedTimeItem?.context ?? DEFAULT_TRANSIT_CONTEXT);
+  }, [timeSelection]);
+
+  useEffect(() => {
     const root = chartCanvasRef.current;
 
     if (!root) {
@@ -492,12 +498,6 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   }
 
   const { astrolabe, calendar, chartProps } = chartState;
-  const resolvedTimeSelection = getResolvedTimeSelection(
-    astrolabe,
-    transitDate,
-    transitHour,
-    timeSelection,
-  );
   const tooltipPalace = getPalaceByIndex(
     astrolabe,
     hoveredPalaceIndex ?? selectedPalaceIndex,
@@ -529,9 +529,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
           <MobileTopBar value={chartMode} onChange={setChartMode} />
 
           <CurrentContextBar
-            targetDate={transitDate}
-            timeSelection={resolvedTimeSelection}
-            transitContext={transitContext}
+            timeSelection={timeSelection}
           />
 
           <MobileTimeNavigator

@@ -20,14 +20,15 @@ export type TransitControlsProps = {
 export type TimeSelectionItem = {
   key: string;
   label: string;
+  context: TransitContext;
 };
 
 export type TimeSelection = {
-  decadal?: TimeSelectionItem;
-  yearly?: TimeSelectionItem;
-  monthly?: TimeSelectionItem;
-  daily?: TimeSelectionItem;
-  hourly?: TimeSelectionItem;
+  decadal?: TimeSelectionItem | null;
+  yearly?: TimeSelectionItem | null;
+  monthly?: TimeSelectionItem | null;
+  daily?: TimeSelectionItem | null;
+  hourly?: TimeSelectionItem | null;
 };
 
 export type TransitCell = {
@@ -143,64 +144,24 @@ function formatSelectionLabel(title: string, subtitle?: string): string {
   return subtitle ? `${title} ${subtitle}` : title;
 }
 
-function getSelectedDecadal(
-  astrolabe: AstrolabeResult,
-  age: number,
-): TimeSelectionItem | undefined {
-  const palace = astrolabe.palaces
-    .map((item) => ({
-      palace: item,
-      startAge: item.decadal.range[0],
-      endAge: item.decadal.range[1],
-    }))
-    .sort((a, b) => a.startAge - b.startAge)
-    .find(({ startAge, endAge }) => age >= startAge && age <= endAge);
-
-  if (!palace) {
-    return undefined;
-  }
-
-  const key = `${palace.palace.heavenlyStem}${palace.palace.earthlyBranch}-${palace.startAge}`;
-  const title = `${palace.startAge}~${palace.endAge}`;
-  const subtitle = `${palace.palace.heavenlyStem}${palace.palace.earthlyBranch}限`;
-
-  return {
-    key,
-    label: formatSelectionLabel(title, subtitle),
-  };
+export function toggleTimeSelection(
+  current: TimeSelectionItem | null | undefined,
+  next: TimeSelectionItem,
+): TimeSelectionItem | null {
+  return current?.key === next.key ? null : next;
 }
 
-export function getResolvedTimeSelection(
-  astrolabe: AstrolabeResult,
-  transitDate: Date,
-  transitHour: number,
+export function getFinestSelectedTimeItem(
   timeSelection: TimeSelection = {},
-): TimeSelection {
-  const birthYear = getBirthYear(astrolabe);
-  const lunarParts = getLunarParts(transitDate);
-  const selectedYear = transitDate.getFullYear();
-  const selectedAge = selectedYear - birthYear + 1;
-  const month = LUNAR_MONTHS[lunarParts.month - 1];
-  const day = LUNAR_DAYS[lunarParts.day - 1];
-  const hour = BIRTH_HOURS[transitHour];
-  const defaults: TimeSelection = {
-    decadal: getSelectedDecadal(astrolabe, selectedAge),
-    yearly: {
-      key: String(selectedYear),
-      label: `${selectedYear}年 ${getGanzhiYear(selectedYear)}`,
-    },
-    monthly: month ? { key: month, label: month } : undefined,
-    daily: day ? { key: day, label: day } : undefined,
-    hourly: hour ? { key: hour, label: `${hour}时` } : undefined,
-  };
-  const manualSelection = Object.fromEntries(
-    Object.entries(timeSelection).filter(([, value]) => value !== undefined),
-  ) as TimeSelection;
-
-  return {
-    ...defaults,
-    ...manualSelection,
-  };
+): TimeSelectionItem | undefined {
+  return (
+    timeSelection.hourly ||
+    timeSelection.daily ||
+    timeSelection.monthly ||
+    timeSelection.yearly ||
+    timeSelection.decadal ||
+    undefined
+  );
 }
 
 function TransitRow({
@@ -239,20 +200,13 @@ export function buildTransitRows({
   timeSelection,
   onTransitDateChange,
   onTransitHourChange,
-  onTransitContextChange,
   onTimeSelectionChange,
 }: TransitControlsProps): TransitRowData[] {
   const birthYear = getBirthYear(astrolabe);
   const lunarParts = getLunarParts(transitDate);
   const selectedYear = transitDate.getFullYear();
   const currentYear = new Date().getFullYear();
-  const selectedAge = selectedYear - birthYear + 1;
-  const resolvedSelection = getResolvedTimeSelection(
-    astrolabe,
-    transitDate,
-    transitHour,
-    timeSelection,
-  );
+  const currentSelection = timeSelection ?? {};
   const decadalCells = astrolabe.palaces
     .map((palace) => ({
       palace,
@@ -269,7 +223,7 @@ export function buildTransitRows({
         title: `${startAge}~${endAge}`,
         subtitle: `${palace.heavenlyStem}${palace.earthlyBranch}限`,
         active:
-          resolvedSelection.decadal?.key ===
+          currentSelection.decadal?.key ===
           `${palace.heavenlyStem}${palace.earthlyBranch}-${startAge}`,
         onClick: () => {
           const nextDate = setSolarYear(transitDate, startYear);
@@ -278,11 +232,7 @@ export function buildTransitRows({
             `${startAge}~${endAge}`,
             `${palace.heavenlyStem}${palace.earthlyBranch}限`,
           );
-          onTransitDateChange(nextDate);
-          onTimeSelectionChange?.({
-            decadal: { key, label },
-          });
-          onTransitContextChange?.({
+          const context: TransitContext = {
             scope: "decadal",
             label: `${startAge}~${endAge} ${palace.heavenlyStem}${palace.earthlyBranch}限`,
             dateLabel: formatDateLabel(nextDate),
@@ -297,6 +247,20 @@ export function buildTransitRows({
               ...palace.majorStars.map((star) => star.name),
               ...palace.minorStars.map((star) => star.name),
             ],
+          };
+          const nextSelection = toggleTimeSelection(currentSelection.decadal, {
+            key,
+            label,
+            context,
+          });
+
+          if (nextSelection) {
+            onTransitDateChange(nextDate);
+          }
+
+          onTimeSelectionChange?.({
+            ...currentSelection,
+            decadal: nextSelection,
           });
         },
       };
@@ -309,25 +273,31 @@ export function buildTransitRows({
       key: String(year),
       title: `${year}年`,
       subtitle: `${getGanzhiYear(year)} ${year - birthYear + 1}岁`,
-      active: resolvedSelection.yearly?.key === String(year),
+      active: currentSelection.yearly?.key === String(year),
       onClick: () => {
         const nextDate = setSolarYear(transitDate, year);
         const ganzhiYear = getGanzhiYear(year);
-        onTransitDateChange(nextDate);
-        onTimeSelectionChange?.({
-          decadal: timeSelection?.decadal,
-          yearly: {
-            key: String(year),
-            label: `${year}年 ${ganzhiYear}`,
-          },
-        });
-        onTransitContextChange?.({
+        const context: TransitContext = {
           scope: "yearly",
           label: `${year}年`,
           dateLabel: formatDateLabel(nextDate),
           heavenlyStem: ganzhiYear.slice(0, 1),
           earthlyBranch: ganzhiYear.slice(1),
           keywords: ["流年", `${year}年`, ganzhiYear, "四化"],
+        };
+        const nextSelection = toggleTimeSelection(currentSelection.yearly, {
+          key: String(year),
+          label: `${year}年 ${ganzhiYear}`,
+          context,
+        });
+
+        if (nextSelection) {
+          onTransitDateChange(nextDate);
+        }
+
+        onTimeSelectionChange?.({
+          ...currentSelection,
+          yearly: nextSelection,
         });
       },
     };
@@ -336,20 +306,28 @@ export function buildTransitRows({
   const monthCells = LUNAR_MONTHS.map<TransitCell>((month, index) => ({
     key: month,
     title: month,
-    active: resolvedSelection.monthly?.key === month,
+    active: currentSelection.monthly?.key === month,
     onClick: () => {
       const nextDate = lunarToDate(lunarParts.year, index + 1, lunarParts.day);
-      onTransitDateChange(nextDate);
-      onTimeSelectionChange?.({
-        decadal: timeSelection?.decadal,
-        yearly: timeSelection?.yearly,
-        monthly: { key: month, label: month },
-      });
-      onTransitContextChange?.({
+      const context: TransitContext = {
         scope: "monthly",
         label: month,
         dateLabel: formatDateLabel(nextDate),
         keywords: ["流月", month, "月限", "四化"],
+      };
+      const nextSelection = toggleTimeSelection(currentSelection.monthly, {
+        key: month,
+        label: month,
+        context,
+      });
+
+      if (nextSelection) {
+        onTransitDateChange(nextDate);
+      }
+
+      onTimeSelectionChange?.({
+        ...currentSelection,
+        monthly: nextSelection,
       });
     },
   }));
@@ -357,21 +335,28 @@ export function buildTransitRows({
   const dayCells = LUNAR_DAYS.map<TransitCell>((day, index) => ({
     key: day,
     title: day,
-    active: resolvedSelection.daily?.key === day,
+    active: currentSelection.daily?.key === day,
     onClick: () => {
       const nextDate = lunarToDate(lunarParts.year, lunarParts.month, index + 1);
-      onTransitDateChange(nextDate);
-      onTimeSelectionChange?.({
-        decadal: timeSelection?.decadal,
-        yearly: timeSelection?.yearly,
-        monthly: timeSelection?.monthly,
-        daily: { key: day, label: day },
-      });
-      onTransitContextChange?.({
+      const context: TransitContext = {
         scope: "daily",
         label: day,
         dateLabel: formatDateLabel(nextDate),
         keywords: ["流日", day, "日限", "四化"],
+      };
+      const nextSelection = toggleTimeSelection(currentSelection.daily, {
+        key: day,
+        label: day,
+        context,
+      });
+
+      if (nextSelection) {
+        onTransitDateChange(nextDate);
+      }
+
+      onTimeSelectionChange?.({
+        ...currentSelection,
+        daily: nextSelection,
       });
     },
   }));
@@ -379,22 +364,28 @@ export function buildTransitRows({
   const hourCells = BIRTH_HOURS.map<TransitCell>((hour, index) => ({
     key: hour,
     title: `${hour}时`,
-    active: resolvedSelection.hourly?.key === hour,
+    active: currentSelection.hourly?.key === hour,
     onClick: () => {
-      onTransitHourChange(index);
-      onTimeSelectionChange?.({
-        decadal: timeSelection?.decadal,
-        yearly: timeSelection?.yearly,
-        monthly: timeSelection?.monthly,
-        daily: timeSelection?.daily,
-        hourly: { key: hour, label: `${hour}时` },
-      });
-      onTransitContextChange?.({
+      const context: TransitContext = {
         scope: "hourly",
         label: `${hour}时`,
         dateLabel: formatDateLabel(transitDate),
         hourLabel: `${hour}时`,
         keywords: ["流时", `${hour}时`, "时限", "四化"],
+      };
+      const nextSelection = toggleTimeSelection(currentSelection.hourly, {
+        key: hour,
+        label: `${hour}时`,
+        context,
+      });
+
+      if (nextSelection) {
+        onTransitHourChange(index);
+      }
+
+      onTimeSelectionChange?.({
+        ...currentSelection,
+        hourly: nextSelection,
       });
     },
   }));

@@ -24,9 +24,9 @@ import {
   TransitControls,
   type TimeSelection,
 } from "./TransitControls";
-import { ResponsiveFullChart } from "./chart/ResponsiveFullChart";
 import { BirthInfoSummary } from "./mobile/BirthInfoSummary";
 import { CurrentContextBar } from "./mobile/CurrentContextBar";
+import { MobileChartLayout } from "./mobile/MobileChartLayout";
 import { MobileTimeNavigator } from "./mobile/MobileTimeNavigator";
 import { MobileTopBar } from "./mobile/MobileTopBar";
 import type { BirthInfo } from "@/types/birth";
@@ -544,10 +544,10 @@ export function ChartView({ birthInfo }: ChartViewProps) {
             onTimeSelectionChange={setTimeSelection}
           />
 
-          <ResponsiveFullChart
+          <MobileChartLayout
             astrolabe={astrolabe}
-            chartProps={chartProps}
-            chartMode={chartMode}
+            birthInfo={birthInfo}
+            calendar={calendar}
             onPalaceSelect={handleMobilePalaceSelect}
             selectedPalaceIndex={selectedPalaceIndex}
             targetDate={transitDate}

@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AstrolabeResult } from "@/lib/astrolabe";
 import { normalizePalaceName, PALACE_MEANING } from "@/lib/interpretation/palaceMeaning";
 import type { TransitContext } from "@/types/interpretation";
+import { useDoubleTap } from "@/hooks/useDoubleTap";
+import { PalaceZoomModal } from "./PalaceZoomModal";
 
 type ChartDisplayMode = "simple" | "full" | "debug";
 type Palace = AstrolabeResult["palaces"][number];
@@ -34,6 +36,26 @@ type HoroscopeData = {
   hourly?: HoroscopeCycle;
 };
 
+export type PalaceViewModel = {
+  index: number;
+  palaceName: string;
+  heavenlyStem: string;
+  earthlyBranch: string;
+  stemBranch: string;
+  decadalAgeRange: string;
+  yearlyAges: number[];
+  majorStars: string[];
+  minorStars: string[];
+  miscStars: string[];
+  flowStars: string[];
+  mutagens: string[];
+  gods: string[];
+  keyword: string;
+  triggerLabel: string;
+  isLifePalace: boolean;
+  isBodyPalace: boolean;
+};
+
 type MobileFullChartProps = {
   astrolabe: AstrolabeResult;
   chartMode: ChartDisplayMode;
@@ -42,13 +64,6 @@ type MobileFullChartProps = {
   targetDate: Date;
   transitHour: number;
   onPalaceSelect: (index: number) => void;
-};
-
-const MUTAGEN_LABELS: Record<string, string> = {
-  禄: "禄",
-  权: "权",
-  科: "科",
-  忌: "忌",
 };
 
 const SCOPE_LABELS: Record<TransitContext["scope"], string> = {
@@ -78,20 +93,10 @@ function isRelatedPalace(index: number, selectedIndex: number | null): boolean {
 }
 
 function formatStar(star: PalaceStar | HoroscopeStar): string {
-  const brightness = star.brightness ? star.brightness : "";
+  const brightness = star.brightness ? `(${star.brightness})` : "";
   const mutagen = star.mutagen ? `化${star.mutagen}` : "";
 
   return `${star.name ?? ""}${brightness}${mutagen}`;
-}
-
-function getMutagens(palace: Palace): string[] {
-  const mutagens = [
-    ...palace.majorStars,
-    ...palace.minorStars,
-    ...palace.adjectiveStars,
-  ].flatMap((star) => (star.mutagen ? [String(star.mutagen)] : []));
-
-  return Array.from(new Set(mutagens)).map((mutagen) => MUTAGEN_LABELS[mutagen] ?? mutagen);
 }
 
 function getKeyword(palace: Palace): string {
@@ -140,46 +145,95 @@ function getCycle(
 
 function getTriggerLabel(
   palace: Palace,
-  selectedPalaceIndex: number | null,
   transitContext: TransitContext,
   horoscope: HoroscopeData | undefined,
 ): string {
   const cycle = getCycle(horoscope, transitContext.scope);
 
-  if (cycle?.index === palace.index) {
-    const stem = cycle.heavenlyStem || cycle.name || transitContext.label;
-    return `${SCOPE_LABELS[transitContext.scope]}·${stem}`;
+  if (cycle?.index !== palace.index) {
+    return "";
   }
 
-  if (palace.index === selectedPalaceIndex) {
-    return "已选中";
-  }
-
-  if (isRelatedPalace(palace.index, selectedPalaceIndex)) {
-    return "三方四正";
-  }
-
-  return "";
+  const stem = cycle.heavenlyStem || cycle.earthlyBranch || cycle.name || transitContext.label;
+  return `${SCOPE_LABELS[transitContext.scope]}·${stem}`;
 }
 
 function getFlowStars(
   horoscope: HoroscopeData | undefined,
   palaceIndex: number,
-): HoroscopeStar[] {
-  return [
-    ...(horoscope?.decadal?.stars?.[palaceIndex] ?? []),
-    ...(horoscope?.yearly?.stars?.[palaceIndex] ?? []),
-    ...(horoscope?.monthly?.stars?.[palaceIndex] ?? []),
-    ...(horoscope?.daily?.stars?.[palaceIndex] ?? []),
-    ...(horoscope?.hourly?.stars?.[palaceIndex] ?? []),
+): string[] {
+  const cycles: Array<{ label: string; cycle?: HoroscopeCycle }> = [
+    { label: "大限", cycle: horoscope?.decadal },
+    { label: "流年", cycle: horoscope?.yearly },
+    { label: "流月", cycle: horoscope?.monthly },
+    { label: "流日", cycle: horoscope?.daily },
+    { label: "流时", cycle: horoscope?.hourly },
   ];
+
+  return cycles.flatMap(({ label, cycle }) =>
+    (cycle?.stars?.[palaceIndex] ?? [])
+      .map(formatStar)
+      .filter(Boolean)
+      .map((star) => `${label}:${star}`),
+  );
 }
 
-function StarBlock({ label, stars }: { label: string; stars: Array<PalaceStar | HoroscopeStar> }) {
+function getMutagens(palace: Palace): string[] {
+  return [
+    ...palace.majorStars,
+    ...palace.minorStars,
+    ...palace.adjectiveStars,
+  ]
+    .flatMap((star) => (star.mutagen ? [`${star.name}化${star.mutagen}`] : []))
+    .filter((mutagen, index, list) => list.indexOf(mutagen) === index);
+}
+
+function getGods(palace: Palace): string[] {
+  return [
+    palace.changsheng12 ? `长生:${palace.changsheng12}` : "",
+    palace.boshi12 ? `博士:${palace.boshi12}` : "",
+    palace.jiangqian12 ? `将前:${palace.jiangqian12}` : "",
+    palace.suiqian12 ? `岁前:${palace.suiqian12}` : "",
+  ].filter(Boolean);
+}
+
+function buildPalaceViewModel(
+  palace: Palace,
+  horoscope: HoroscopeData | undefined,
+  transitContext: TransitContext,
+): PalaceViewModel {
+  return {
+    index: palace.index,
+    palaceName: palace.name,
+    heavenlyStem: palace.heavenlyStem,
+    earthlyBranch: palace.earthlyBranch,
+    stemBranch: `${palace.heavenlyStem}${palace.earthlyBranch}`,
+    decadalAgeRange: palace.decadal.range.join("~"),
+    yearlyAges: palace.ages,
+    majorStars: palace.majorStars.map(formatStar).filter(Boolean),
+    minorStars: palace.minorStars.map(formatStar).filter(Boolean),
+    miscStars: palace.adjectiveStars.map(formatStar).filter(Boolean),
+    flowStars: getFlowStars(horoscope, palace.index),
+    mutagens: getMutagens(palace),
+    gods: getGods(palace),
+    keyword: getKeyword(palace),
+    triggerLabel: getTriggerLabel(palace, transitContext, horoscope),
+    isLifePalace: palace.isOriginalPalace,
+    isBodyPalace: palace.isBodyPalace,
+  };
+}
+
+function CompactLine({
+  label,
+  items,
+}: {
+  label: string;
+  items: string[];
+}) {
   return (
-    <div className="mobile-palace-detail-block">
+    <div className="mobile-palace-line">
       <span>{label}</span>
-      <p>{stars.length > 0 ? stars.map(formatStar).filter(Boolean).join("、") : "暂无"}</p>
+      <p>{items.length > 0 ? items.join(" ") : "无"}</p>
     </div>
   );
 }
@@ -188,24 +242,16 @@ function PalaceCell({
   palace,
   chartMode,
   selectedPalaceIndex,
-  transitContext,
-  horoscope,
-  onClick,
+  onSelect,
+  onZoom,
 }: {
-  palace: Palace;
+  palace: PalaceViewModel;
   chartMode: ChartDisplayMode;
   selectedPalaceIndex: number | null;
-  transitContext: TransitContext;
-  horoscope: HoroscopeData | undefined;
-  onClick: () => void;
+  onSelect: (index: number) => void;
+  onZoom: (index: number) => void;
 }) {
-  const mutagens = getMutagens(palace);
-  const triggerLabel = getTriggerLabel(
-    palace,
-    selectedPalaceIndex,
-    transitContext,
-    horoscope,
-  );
+  const doubleTapHandlers = useDoubleTap(() => onZoom(palace.index));
   const isSelected = palace.index === selectedPalaceIndex;
   const isRelated = isRelatedPalace(palace.index, selectedPalaceIndex);
 
@@ -219,119 +265,40 @@ function PalaceCell({
         .filter(Boolean)
         .join(" ")}
       style={{ gridArea: `g${palace.index}` }}
-      onClick={onClick}
       type="button"
+      onClick={() => onSelect(palace.index)}
+      onDoubleClick={(event) => {
+        event.preventDefault();
+        onZoom(palace.index);
+      }}
+      {...doubleTapHandlers}
     >
-      {chartMode === "debug" ? <span className="mobile-palace-debug">#{palace.index}</span> : null}
-      <div className="mobile-palace-stars">
-        {palace.majorStars.slice(0, 2).map((star) => (
-          <b key={star.name}>{formatStar(star)}</b>
-        ))}
-        {palace.majorStars.length === 0 ? <b>无主星</b> : null}
+      <div className="mobile-palace-title">
+        <b>{palace.palaceName}</b>
+        <span>
+          {palace.earthlyBranch}/{palace.stemBranch}
+        </span>
       </div>
-      <div className="mobile-palace-mutagens">
-        {mutagens.slice(0, 4).map((mutagen) => (
-          <i className={`mutagen-tag mutagen-${mutagen}`} key={mutagen}>
-            {mutagen}
-          </i>
-        ))}
+
+      <div className="mobile-palace-flags">
+        {chartMode === "debug" ? <i>#{palace.index}</i> : null}
+        {palace.isLifePalace ? <i>命</i> : null}
+        {palace.isBodyPalace ? <i>身</i> : null}
+        {palace.triggerLabel ? <i>{palace.triggerLabel}</i> : null}
       </div>
-      <div className="mobile-palace-branch">
-        <span>{palace.earthlyBranch}</span>
-        <small>
-          {palace.heavenlyStem}
-          {palace.earthlyBranch}
-        </small>
+
+      <CompactLine label="主" items={palace.majorStars} />
+      <CompactLine label="辅" items={palace.minorStars} />
+      <CompactLine label="杂" items={palace.miscStars} />
+      <CompactLine label="流" items={palace.flowStars} />
+      <CompactLine label="化" items={palace.mutagens} />
+      <CompactLine label="神" items={palace.gods} />
+
+      <div className="mobile-palace-foot">
+        <span>限 {palace.decadalAgeRange}</span>
+        <span>年 {palace.yearlyAges.join(" ")}</span>
       </div>
-      {triggerLabel ? <em className="mobile-palace-trigger">{triggerLabel}</em> : null}
-      <div className="mobile-palace-decade">{palace.decadal.range.join("~")}</div>
-      <div className="mobile-palace-name">{palace.name}</div>
     </button>
-  );
-}
-
-function PalaceDetailSheet({
-  palace,
-  horoscope,
-  onClose,
-}: {
-  palace: Palace | null;
-  horoscope: HoroscopeData | undefined;
-  onClose: () => void;
-}) {
-  if (!palace) {
-    return null;
-  }
-
-  const mutagens = getMutagens(palace);
-  const flowStars = getFlowStars(horoscope, palace.index);
-
-  return (
-    <div className="mobile-sheet-backdrop" role="presentation" onClick={onClose}>
-      <section
-        aria-label={`${palace.name}详情`}
-        className="mobile-palace-sheet mobile-safe-bottom"
-        role="dialog"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="mobile-sheet-handle" />
-        <div className="mobile-palace-sheet-head">
-          <div>
-            <p className="section-kicker">Palace Detail</p>
-            <h3>
-              {palace.name}｜{palace.heavenlyStem}
-              {palace.earthlyBranch}
-            </h3>
-          </div>
-          <button type="button" onClick={onClose}>
-            关闭
-          </button>
-        </div>
-
-        <div className="mobile-palace-detail-grid">
-          <div className="mobile-palace-detail-block">
-            <span>地支 / 干支</span>
-            <p>
-              {palace.earthlyBranch} / {palace.heavenlyStem}
-              {palace.earthlyBranch}
-            </p>
-          </div>
-          <div className="mobile-palace-detail-block">
-            <span>大限</span>
-            <p>{palace.decadal.range.join("~")}</p>
-          </div>
-          <div className="mobile-palace-detail-block">
-            <span>四化</span>
-            <p>{mutagens.length > 0 ? mutagens.join("、") : "暂无"}</p>
-          </div>
-          <div className="mobile-palace-detail-block">
-            <span>小限 / 流年数字</span>
-            <p>{palace.ages.length > 0 ? palace.ages.join("、") : "暂无"}</p>
-          </div>
-          <StarBlock label="主星" stars={palace.majorStars} />
-          <StarBlock label="辅星" stars={palace.minorStars} />
-          <StarBlock label="杂曜" stars={palace.adjectiveStars} />
-          <StarBlock label="流曜" stars={flowStars} />
-          <div className="mobile-palace-detail-block is-wide">
-            <span>神煞 / 十二神</span>
-            <p>
-              {[
-                palace.changsheng12 ? `长生：${palace.changsheng12}` : "",
-                palace.boshi12 ? `博士：${palace.boshi12}` : "",
-                palace.jiangqian12 ? `将前：${palace.jiangqian12}` : "",
-                palace.suiqian12 ? `岁前：${palace.suiqian12}` : "",
-              ]
-                .filter(Boolean)
-                .join(" / ") || "暂无"}
-            </p>
-          </div>
-          <div className="mobile-palace-detail-block is-wide">
-            <span>该宫解读依据</span>
-            <p>{getKeyword(palace)}</p>
-          </div>
-        </div>
-      </section>
-    </div>
   );
 }
 
@@ -344,19 +311,64 @@ export function MobileFullChart({
   transitHour,
   onPalaceSelect,
 }: MobileFullChartProps) {
-  const [detailPalaceIndex, setDetailPalaceIndex] = useState<number | null>(null);
+  const [zoomPalaceIndex, setZoomPalaceIndex] = useState<number | null>(null);
+  const clickTimerRef = useRef<number | null>(null);
+  const suppressClickUntilRef = useRef(0);
   const horoscope = useMemo(
     () => getHoroscope(astrolabe, targetDate, transitHour),
     [astrolabe, targetDate, transitHour],
   );
   const palaces = useMemo(
-    () => [...astrolabe.palaces].sort((a, b) => a.index - b.index),
-    [astrolabe.palaces],
+    () =>
+      [...astrolabe.palaces]
+        .sort((a, b) => a.index - b.index)
+        .map((palace) => buildPalaceViewModel(palace, horoscope, transitContext)),
+    [astrolabe.palaces, horoscope, transitContext],
   );
-  const detailPalace =
-    detailPalaceIndex === null
+  const zoomPalace =
+    zoomPalaceIndex === null
       ? null
-      : palaces.find((palace) => palace.index === detailPalaceIndex) ?? null;
+      : palaces.find((palace) => palace.index === zoomPalaceIndex) ?? null;
+
+  useEffect(
+    () => () => {
+      if (clickTimerRef.current) {
+        window.clearTimeout(clickTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  const clearClickTimer = useCallback(() => {
+    if (clickTimerRef.current) {
+      window.clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+  }, []);
+
+  const queuePalaceSelect = useCallback(
+    (index: number) => {
+      if (Date.now() < suppressClickUntilRef.current) {
+        return;
+      }
+
+      clearClickTimer();
+      clickTimerRef.current = window.setTimeout(() => {
+        onPalaceSelect(index);
+        clickTimerRef.current = null;
+      }, 320);
+    },
+    [clearClickTimer, onPalaceSelect],
+  );
+
+  const openPalaceZoom = useCallback(
+    (index: number) => {
+      suppressClickUntilRef.current = Date.now() + 380;
+      clearClickTimer();
+      setZoomPalaceIndex(index);
+    },
+    [clearClickTimer],
+  );
 
   return (
     <section className={`mobile-chart-view mobile-chart-mode-${chartMode}`}>
@@ -364,6 +376,7 @@ export function MobileFullChart({
         <div>
           <p className="section-kicker">Chart</p>
           <h2>命盘</h2>
+          <p className="mobile-chart-hint">双击任意宫位可放大查看</p>
         </div>
       </div>
 
@@ -372,15 +385,11 @@ export function MobileFullChart({
           {palaces.map((palace) => (
             <PalaceCell
               chartMode={chartMode}
-              horoscope={horoscope}
               key={palace.index}
               palace={palace}
               selectedPalaceIndex={selectedPalaceIndex}
-              transitContext={transitContext}
-              onClick={() => {
-                onPalaceSelect(palace.index);
-                setDetailPalaceIndex(palace.index);
-              }}
+              onSelect={queuePalaceSelect}
+              onZoom={openPalaceZoom}
             />
           ))}
 
@@ -396,10 +405,10 @@ export function MobileFullChart({
         </div>
       </div>
 
-      <PalaceDetailSheet
-        horoscope={horoscope}
-        palace={detailPalace}
-        onClose={() => setDetailPalaceIndex(null)}
+      <PalaceZoomModal
+        open={zoomPalace !== null}
+        palace={zoomPalace}
+        onClose={() => setZoomPalaceIndex(null)}
       />
     </section>
   );

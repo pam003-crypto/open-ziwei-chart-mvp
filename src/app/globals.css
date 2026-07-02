@@ -947,7 +947,6 @@ button:disabled {
 }
 
 .mobile-top-bar button,
-.mobile-chart-mode-switch button,
 .mobile-time-chip {
   touch-action: manipulation;
 }
@@ -1170,6 +1169,13 @@ button:disabled {
   margin: 4px 0 0;
 }
 
+.mobile-chart-hint {
+  color: #a8a29e;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
+
 .mobile-chart-wrap {
   width: 100%;
   max-width: 100%;
@@ -1186,9 +1192,10 @@ button:disabled {
   border: 1px solid #d8dde6;
   border-radius: 10px;
   background: #d8dde6;
-  gap: 2px;
+  aspect-ratio: 1 / 1;
+  gap: 1px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(84px, auto));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
   grid-template-areas:
     "g3 g4 g5 g6"
     "g2 ct ct g7"
@@ -1200,17 +1207,17 @@ button:disabled {
   position: relative;
   display: grid;
   min-width: 0;
-  min-height: 92px;
+  min-height: 0;
   overflow: hidden;
   border: 0;
   background: #fffaf0;
   border: 1px solid #44403c;
   color: #1f2937;
   cursor: pointer;
-  font-size: clamp(9px, 2.35vw, 12px);
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
-  line-height: 1.15;
-  padding: 4px;
+  font-size: clamp(6px, 1.55vw, 10px);
+  gap: 1px;
+  line-height: 1.05;
+  padding: 3px;
   text-align: left;
   touch-action: manipulation;
 }
@@ -1225,150 +1232,110 @@ button:disabled {
   box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.46);
 }
 
-.mobile-palace-stars {
-  display: grid;
-  min-width: 0;
-  gap: 1px;
-  padding-right: 22px;
-}
-
-.mobile-palace-stars b {
-  min-width: 0;
-  overflow: hidden;
-  color: #dc2626;
-  font-size: clamp(10px, 2.75vw, 13px);
-  font-weight: 900;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mobile-palace-mutagens {
+.mobile-palace-title {
   display: flex;
-  flex-wrap: wrap;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
   gap: 2px;
-  min-height: 14px;
-  overflow: hidden;
 }
 
-.mobile-palace-mutagens .mutagen-tag {
-  min-width: 16px;
-  border-radius: 3px;
-  font-size: clamp(8px, 2vw, 10px);
-  padding: 2px 3px;
+.mobile-palace-title b {
+  color: #dc2626;
+  font-size: clamp(7px, 1.9vw, 11px);
+  font-weight: 900;
 }
 
-.mobile-palace-branch {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  display: grid;
-  gap: 0;
-  max-width: 24px;
+.mobile-palace-title span {
+  color: #0f766e;
+  font-size: clamp(6px, 1.45vw, 9px);
+  font-weight: 800;
   text-align: right;
 }
 
-.mobile-palace-branch span {
-  color: #0f766e;
-  font-size: clamp(11px, 2.7vw, 14px);
-  font-weight: 800;
+.mobile-palace-flags {
+  display: flex;
+  min-height: 8px;
+  flex-wrap: wrap;
+  gap: 1px;
 }
 
-.mobile-palace-branch small {
-  overflow: hidden;
-  color: #64748b;
-  font-size: clamp(8px, 1.9vw, 10px);
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mutagen-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  border-radius: 5px;
-  background: #dc2626;
-  color: #ffffff;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 900;
-  line-height: 1;
-  padding: 5px 7px;
-}
-
-.mutagen-权 {
-  background: #7c3aed;
-}
-
-.mutagen-科 {
-  background: #0891b2;
-}
-
-.mutagen-忌 {
-  background: #312e81;
-}
-
-.mobile-palace-trigger {
-  align-self: center;
-  justify-self: start;
-  max-width: 100%;
-  overflow: hidden;
-  border-radius: 999px;
+.mobile-palace-flags i {
+  border-radius: 2px;
   background: rgba(37, 99, 235, 0.12);
   color: #1d4ed8;
-  font-size: clamp(8px, 2vw, 10px);
+  font-size: clamp(5px, 1.25vw, 8px);
   font-style: normal;
   font-weight: 800;
-  padding: 2px 4px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 1px 2px;
 }
 
-.mobile-palace-decade {
-  align-self: end;
-  color: #2563eb;
-  font-size: clamp(10px, 2.6vw, 13px);
+.mobile-palace-line {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1px;
+}
+
+.mobile-palace-line span {
+  color: #64748b;
+  font-size: clamp(5px, 1.2vw, 8px);
   font-weight: 900;
 }
 
-.mobile-palace-name {
-  overflow: hidden;
+.mobile-palace-line p {
+  min-width: 0;
+  color: #334155;
+  font-size: inherit;
+  line-height: 1.05;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.mobile-palace-line:nth-of-type(3) p {
   color: #dc2626;
-  font-size: clamp(11px, 2.8vw, 14px);
-  font-weight: 900;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: 800;
 }
 
-.mobile-palace-debug {
-  position: absolute;
-  right: 2px;
-  bottom: 2px;
-  color: rgba(124, 58, 237, 0.72);
-  font-size: 8px;
+.mobile-palace-line:nth-of-type(4) p {
+  color: #2563eb;
+}
+
+.mobile-palace-foot {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+  margin-top: 1px;
+}
+
+.mobile-palace-foot span {
+  color: #2563eb;
+  font-size: clamp(5px, 1.3vw, 8px);
   font-weight: 900;
+  overflow-wrap: anywhere;
 }
 
 .mobile-center-cell {
   display: grid;
   min-width: 0;
+  min-height: 0;
   overflow: hidden;
   border: 0;
   background: #eef1f5;
   color: #475569;
-  font-size: clamp(10px, 2.5vw, 13px);
-  gap: 3px;
+  font-size: clamp(7px, 1.75vw, 11px);
+  gap: 2px;
+  grid-column: 2 / span 2;
+  grid-row: 2 / span 2;
   grid-area: ct;
-  line-height: 1.25;
-  padding: 8px;
+  line-height: 1.15;
+  padding: 6px;
   text-align: center;
 }
 
 .mobile-center-cell strong {
   color: #111827;
-  font-size: clamp(12px, 3vw, 15px);
+  font-size: clamp(8px, 2vw, 12px);
   font-weight: 900;
 }
 
@@ -1383,6 +1350,116 @@ button:disabled {
 .mobile-center-cell b {
   color: #0f766e;
   font-weight: 900;
+}
+
+.palace-zoom-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  padding: 16px;
+}
+
+.palace-zoom-modal {
+  width: calc(100% - 32px);
+  max-width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid #d8dde6;
+  border-radius: 16px;
+  background: #fffaf0;
+  color: #1f2937;
+  padding: 16px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+}
+
+.palace-zoom-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.palace-zoom-head h3 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: #dc2626;
+  font-size: 22px;
+  font-weight: 900;
+  margin: 5px 0 0;
+}
+
+.palace-zoom-head h3 small {
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 3px 7px;
+}
+
+.palace-zoom-head button {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 8px 12px;
+}
+
+.palace-zoom-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.palace-zoom-meta b {
+  min-width: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+  padding: 8px;
+  overflow-wrap: anywhere;
+}
+
+.palace-zoom-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.palace-zoom-block {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.palace-zoom-block span {
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.palace-zoom-block p {
+  color: #1f2937;
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
 }
 
 .mobile-sheet-backdrop {

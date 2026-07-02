@@ -21,6 +21,7 @@ import { getCalendarSummary, type CalendarSummary } from "@/lib/calendar";
 import { InterpretationPanel } from "./InterpretationPanel";
 import { TransitControls } from "./TransitControls";
 import { BirthInfoSummary } from "./mobile/BirthInfoSummary";
+import { CurrentContextBar } from "./mobile/CurrentContextBar";
 import { MobileFullChart } from "./mobile/MobileFullChart";
 import { MobileTimeNavigator } from "./mobile/MobileTimeNavigator";
 import { MobileTopBar } from "./mobile/MobileTopBar";
@@ -514,6 +515,11 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       <section className="chart-shell mobile-chart-shell">
         <div className="mobile-layout">
           <MobileTopBar value={chartMode} onChange={setChartMode} />
+
+          <CurrentContextBar
+            targetDate={transitDate}
+            transitContext={transitContext}
+          />
 
           <MobileTimeNavigator
             astrolabe={astrolabe}

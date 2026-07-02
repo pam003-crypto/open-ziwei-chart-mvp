@@ -1,6 +1,6 @@
 "use client";
 
-import type { PalaceViewModel } from "./MobileFullChart";
+import type { PalaceViewModel } from "./palaceViewModel";
 
 type PalaceZoomModalProps = {
   palace: PalaceViewModel | null;

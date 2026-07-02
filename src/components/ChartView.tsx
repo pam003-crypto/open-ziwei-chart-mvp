@@ -20,9 +20,9 @@ import {
 import { getCalendarSummary, type CalendarSummary } from "@/lib/calendar";
 import { InterpretationPanel } from "./InterpretationPanel";
 import { TransitControls } from "./TransitControls";
+import { ResponsiveFullChart } from "./chart/ResponsiveFullChart";
 import { BirthInfoSummary } from "./mobile/BirthInfoSummary";
 import { CurrentContextBar } from "./mobile/CurrentContextBar";
-import { MobileFullChart } from "./mobile/MobileFullChart";
 import { MobileTimeNavigator } from "./mobile/MobileTimeNavigator";
 import { MobileTopBar } from "./mobile/MobileTopBar";
 import type { BirthInfo } from "@/types/birth";
@@ -531,8 +531,9 @@ export function ChartView({ birthInfo }: ChartViewProps) {
             onTransitContextChange={setTransitContext}
           />
 
-          <MobileFullChart
+          <ResponsiveFullChart
             astrolabe={astrolabe}
+            chartProps={chartProps}
             chartMode={chartMode}
             onPalaceSelect={handleMobilePalaceSelect}
             selectedPalaceIndex={selectedPalaceIndex}

@@ -11,17 +11,21 @@ function MobileTransitRow({ row }: { row: TransitRowData }) {
     <div className="mobile-time-row">
       <div className="mobile-time-row-label">{row.label}</div>
       <div className="mobile-time-chip-track">
-        {row.cells.map((cell) => (
-          <button
-            className={cell.active ? "mobile-time-chip is-active" : "mobile-time-chip"}
-            key={cell.key}
-            onClick={cell.onClick}
-            type="button"
-          >
-            <span>{cell.title}</span>
-            {cell.subtitle ? <small>{cell.subtitle}</small> : null}
-          </button>
-        ))}
+        <div className="mobile-time-chip-list">
+          {row.cells.map((cell) => (
+            <button
+              className={cell.active ? "mobile-time-chip is-active" : "mobile-time-chip"}
+              key={cell.key}
+              onClick={cell.onClick}
+              type="button"
+            >
+              <span className="mobile-time-chip-primary">{cell.title}</span>
+              {cell.subtitle ? (
+                <span className="mobile-time-chip-secondary">{cell.subtitle}</span>
+              ) : null}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

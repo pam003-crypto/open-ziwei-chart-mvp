@@ -46,14 +46,14 @@ export default function Home() {
     });
   }
 
-  const isMobileChartView = mobileView === "chart" && birthInfo !== null;
+  const isMobileResultView = mobileView === "chart" && birthInfo !== null;
 
   return (
-    <main className="min-h-screen bg-stone-950 text-stone-100">
+    <main className="mobile-page min-h-screen bg-stone-950 text-stone-100">
       <div className="mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-3 py-3 md:px-4 md:py-6 lg:px-6">
         <header
           className={`flex flex-col gap-2 border-b border-stone-800 pb-5 ${
-            isMobileChartView ? "max-lg:hidden" : ""
+            isMobileResultView ? "max-lg:hidden" : ""
           }`}
         >
           <p className="section-kicker">Open Ziwei Chart MVP</p>
@@ -65,7 +65,7 @@ export default function Home() {
         <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
           <aside
             className={`space-y-6 ${
-              isMobileChartView ? "max-lg:hidden" : ""
+              isMobileResultView ? "max-lg:hidden" : ""
             }`}
           >
             <BirthForm initialValue={formValue} onSubmit={handleSubmit} />
@@ -84,7 +84,7 @@ export default function Home() {
           >
             <ChartView birthInfo={birthInfo} />
 
-            {isMobileChartView ? (
+            {isMobileResultView ? (
               <details className="mobile-collapse-card mobile-profile-manager mt-4 md:hidden">
                 <summary>命例管理</summary>
                 <div className="mobile-profile-actions">

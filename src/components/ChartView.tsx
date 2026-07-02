@@ -21,8 +21,7 @@ import { getCalendarSummary, type CalendarSummary } from "@/lib/calendar";
 import { InterpretationPanel } from "./InterpretationPanel";
 import { TransitControls } from "./TransitControls";
 import { BirthInfoSummary } from "./mobile/BirthInfoSummary";
-import { CurrentContextBar } from "./mobile/CurrentContextBar";
-import { MobileChartView } from "./mobile/MobileChartView";
+import { MobileFullChart } from "./mobile/MobileFullChart";
 import { MobileTimeNavigator } from "./mobile/MobileTimeNavigator";
 import { MobileTopBar } from "./mobile/MobileTopBar";
 import type { BirthInfo } from "@/types/birth";
@@ -57,7 +56,6 @@ type ChartViewProps = {
 };
 
 type ChartDisplayMode = "simple" | "full" | "debug";
-type MobileChartMode = "cards" | "full";
 
 type Palace = AstrolabeResult["palaces"][number];
 type PalaceStar =
@@ -282,7 +280,6 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   const [selectedPalaceIndex, setSelectedPalaceIndex] = useState<number | null>(null);
   const [hoveredPalaceIndex, setHoveredPalaceIndex] = useState<number | null>(null);
   const [chartMode, setChartMode] = useState<ChartDisplayMode>("simple");
-  const [mobileChartMode, setMobileChartMode] = useState<MobileChartMode>("cards");
   const [isMobileLayout, setIsMobileLayout] = useState(false);
   const [transitDate, setTransitDate] = useState<Date>(() => new Date());
   const [transitHour, setTransitHour] = useState<number>(0);
@@ -322,7 +319,6 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   useEffect(() => {
     setSelectedPalaceIndex(null);
     setHoveredPalaceIndex(null);
-    setMobileChartMode("cards");
 
     if (chartState.ok) {
       setTransitDate(new Date());
@@ -519,20 +515,6 @@ export function ChartView({ birthInfo }: ChartViewProps) {
         <div className="mobile-layout">
           <MobileTopBar value={chartMode} onChange={setChartMode} />
 
-          <CurrentContextBar
-            targetDate={transitDate}
-            transitContext={transitContext}
-          />
-
-          <InterpretationPanel
-            astrolabe={astrolabe}
-            selectedPalaceId={selectedPalaceIndex}
-            targetDate={transitDate}
-            transitContext={transitContext}
-            transitHour={transitHour}
-            variant="mobile"
-          />
-
           <MobileTimeNavigator
             astrolabe={astrolabe}
             transitDate={transitDate}
@@ -543,15 +525,23 @@ export function ChartView({ birthInfo }: ChartViewProps) {
             onTransitContextChange={setTransitContext}
           />
 
-          <MobileChartView
+          <MobileFullChart
             astrolabe={astrolabe}
             chartMode={chartMode}
-            fullChart={renderChartCanvas("mobile-chart-canvas")}
-            mobileChartMode={mobileChartMode}
-            onMobileChartModeChange={setMobileChartMode}
             onPalaceSelect={handleMobilePalaceSelect}
             selectedPalaceIndex={selectedPalaceIndex}
+            targetDate={transitDate}
             transitContext={transitContext}
+            transitHour={transitHour}
+          />
+
+          <InterpretationPanel
+            astrolabe={astrolabe}
+            selectedPalaceId={selectedPalaceIndex}
+            targetDate={transitDate}
+            transitContext={transitContext}
+            transitHour={transitHour}
+            variant="mobile"
           />
 
           <BirthInfoSummary

@@ -1397,10 +1397,13 @@ button:disabled {
   right: 32%;
   left: 3px;
   z-index: 2;
-  display: flex;
+  display: grid;
+  grid-auto-flow: row;
+  grid-auto-rows: min-content;
+  grid-template-columns: repeat(2, minmax(0, max-content));
   max-height: 28%;
-  flex-wrap: wrap;
-  align-content: flex-start;
+  align-content: start;
+  justify-content: start;
   gap: 1px 2px;
   overflow: hidden;
   line-height: 1.05;
@@ -1476,10 +1479,13 @@ button:disabled {
   right: 3px;
   left: 3px;
   z-index: 1;
-  display: flex;
+  display: grid;
+  grid-auto-flow: row;
+  grid-auto-rows: min-content;
+  grid-template-columns: repeat(4, minmax(0, max-content));
   max-height: 18%;
-  flex-wrap: wrap;
-  align-content: flex-start;
+  align-content: start;
+  justify-content: start;
   gap: 0 2px;
   overflow: hidden;
   line-height: 1.05;
@@ -1507,9 +1513,13 @@ button:disabled {
   right: 42%;
   left: 3px;
   z-index: 1;
-  display: flex;
+  display: grid;
+  grid-auto-flow: row;
+  grid-auto-rows: min-content;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  align-content: start;
+  justify-content: start;
   max-height: 20%;
-  flex-wrap: wrap;
   gap: 0 2px;
   overflow: hidden;
   line-height: 1.05;
@@ -1528,10 +1538,13 @@ button:disabled {
   top: 52%;
   left: 50%;
   z-index: 3;
-  display: flex;
+  display: grid;
+  grid-auto-flow: row;
+  grid-auto-rows: min-content;
+  grid-template-columns: repeat(2, minmax(0, max-content));
   max-width: 80%;
   max-height: 26px;
-  flex-wrap: wrap;
+  align-content: center;
   justify-content: center;
   gap: 2px;
   overflow: hidden;
@@ -1582,12 +1595,27 @@ button:disabled {
   bottom: 19px;
   left: 3px;
   z-index: 1;
+  display: grid;
+  grid-auto-flow: row;
+  grid-auto-rows: min-content;
+  grid-template-columns: repeat(4, minmax(0, max-content));
+  gap: 0 2px;
+  align-content: start;
+  justify-content: start;
   max-height: 16px;
   overflow: hidden;
   color: #64748b;
   font-size: clamp(5.8px, 1.25vw, 8px);
   line-height: 1.05;
-  white-space: normal;
+  white-space: nowrap;
+}
+
+.mobile-palace-cell .palace-age-num {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .mobile-palace-cell .palace-age-range {

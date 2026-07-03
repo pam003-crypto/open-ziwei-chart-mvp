@@ -283,7 +283,11 @@ function MobilePalaceCell({
       </span>
 
       <span className="palace-age-sequence">
-        {palace.yearlyAges.slice(0, 8).join(" ")}
+        {palace.yearlyAges.slice(0, 8).map((age) => (
+          <span className="palace-age-num" key={age}>
+            {age}
+          </span>
+        ))}
       </span>
 
       <span className="palace-age-range">{palace.decadalAgeRange}</span>

@@ -1393,28 +1393,30 @@ button:disabled {
 
 .mobile-palace-cell .palace-main-stars {
   position: absolute;
-  top: 3px;
-  right: 32%;
-  left: 3px;
+  top: 4px;
+  left: 4px;
+  width: 34%;
   z-index: 2;
-  display: grid;
-  grid-auto-flow: row;
-  grid-auto-rows: min-content;
-  grid-template-columns: repeat(2, minmax(0, max-content));
-  max-height: 28%;
-  align-content: start;
-  justify-content: start;
-  gap: 1px 2px;
+  display: flex;
+  max-height: 38%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
   overflow: hidden;
-  line-height: 1.05;
+  line-height: 1.02;
 }
 
 .mobile-palace-cell .palace-main-star {
-  display: inline-flex;
+  display: flex;
+  max-width: 100%;
   align-items: center;
+  gap: 1px;
+  overflow: hidden;
   color: #c92a2a;
-  font-size: clamp(7.5px, 1.75vw, 11px);
+  font-size: clamp(8px, 1.75vw, 11px);
   font-weight: 800;
+  line-height: 1.02;
+  text-overflow: clip;
   white-space: nowrap;
 }
 
@@ -1442,15 +1444,15 @@ button:disabled {
 }
 
 .mobile-palace-cell .palace-mutagen.lu {
-  background: #dc2626;
+  background: #c92a2a;
 }
 
 .mobile-palace-cell .palace-mutagen.quan {
-  background: #2563eb;
+  background: #1d4ed8;
 }
 
 .mobile-palace-cell .palace-mutagen.ke {
-  background: #0891b2;
+  background: #0f8fa6;
 }
 
 .mobile-palace-cell .palace-mutagen.ji {
@@ -1459,10 +1461,10 @@ button:disabled {
 
 .mobile-palace-cell .palace-branch {
   position: absolute;
-  top: 3px;
-  right: 3px;
+  top: 4px;
+  right: 4px;
   z-index: 2;
-  max-width: 32%;
+  max-width: 58%;
   overflow: hidden;
   color: #0f766e;
   font-size: clamp(7px, 1.55vw, 10px);
@@ -1475,32 +1477,33 @@ button:disabled {
 
 .mobile-palace-cell .palace-minor-stars {
   position: absolute;
-  top: 24%;
-  right: 3px;
-  left: 3px;
+  top: 20%;
+  left: 4px;
+  width: 34%;
   z-index: 1;
-  display: grid;
-  grid-auto-flow: row;
-  grid-auto-rows: min-content;
-  grid-template-columns: repeat(4, minmax(0, max-content));
-  max-height: 18%;
-  align-content: start;
-  justify-content: start;
-  gap: 0 2px;
+  display: flex;
+  max-height: 28%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
   overflow: hidden;
-  line-height: 1.05;
+  line-height: 1.03;
 }
 
 .mobile-palace-cell .palace-minor-star {
-  display: inline-block;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
   color: #334155;
-  font-size: clamp(6.5px, 1.45vw, 9px);
+  font-size: clamp(6.5px, 1.4vw, 9px);
   font-weight: 600;
+  line-height: 1.03;
+  text-overflow: clip;
   white-space: nowrap;
 }
 
 .mobile-palace-cell .palace-minor-star.positive {
-  color: #2563eb;
+  color: #1d4ed8;
 }
 
 .mobile-palace-cell .palace-minor-star.negative {
@@ -1509,48 +1512,48 @@ button:disabled {
 
 .mobile-palace-cell .palace-misc-stars {
   position: absolute;
-  top: 42%;
-  right: 42%;
-  left: 3px;
+  top: 40%;
+  left: 4px;
+  width: 34%;
   z-index: 1;
-  display: grid;
-  grid-auto-flow: row;
-  grid-auto-rows: min-content;
-  grid-template-columns: repeat(2, minmax(0, max-content));
-  align-content: start;
-  justify-content: start;
+  display: flex;
   max-height: 20%;
-  gap: 0 2px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
   overflow: hidden;
-  line-height: 1.05;
+  line-height: 1.02;
 }
 
 .mobile-palace-cell .palace-misc-star {
-  display: inline-block;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
   color: #64748b;
-  font-size: clamp(6px, 1.35vw, 8.5px);
+  font-size: clamp(6px, 1.25vw, 8px);
   font-weight: 500;
+  line-height: 1.02;
+  text-overflow: clip;
   white-space: nowrap;
 }
 
 .mobile-palace-cell .palace-flow-tags {
   position: absolute;
   top: 52%;
-  left: 50%;
+  right: 4px;
   z-index: 3;
-  display: grid;
-  grid-auto-flow: row;
-  grid-auto-rows: min-content;
-  grid-template-columns: repeat(2, minmax(0, max-content));
-  max-width: 80%;
+  display: flex;
+  max-width: 58%;
   max-height: 26px;
+  flex-direction: column;
   align-content: center;
-  justify-content: center;
-  gap: 2px;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 1px;
   overflow: hidden;
   line-height: 1;
   pointer-events: none;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
 }
 
 .mobile-palace-cell .palace-flow-tag {
@@ -1559,7 +1562,7 @@ button:disabled {
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  background: #dc2626;
+  background: #c92a2a;
   box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.4);
   color: #ffffff;
   font-size: clamp(6px, 1.35vw, 8px);
@@ -1570,19 +1573,19 @@ button:disabled {
 }
 
 .mobile-palace-cell .palace-flow-tag.decade {
-  background: #7c3aed;
+  background: #6d28d9;
 }
 
 .mobile-palace-cell .palace-flow-tag.year {
-  background: #dc2626;
+  background: #c92a2a;
 }
 
 .mobile-palace-cell .palace-flow-tag.month {
-  background: #2563eb;
+  background: #1d4ed8;
 }
 
 .mobile-palace-cell .palace-flow-tag.day {
-  background: #16a34a;
+  background: #15803d;
 }
 
 .mobile-palace-cell .palace-flow-tag.hour {
@@ -1591,18 +1594,18 @@ button:disabled {
 
 .mobile-palace-cell .palace-age-sequence {
   position: absolute;
-  right: 36%;
-  bottom: 19px;
-  left: 3px;
+  right: 4px;
+  bottom: 31px;
+  left: 42%;
   z-index: 1;
   display: grid;
   grid-auto-flow: row;
   grid-auto-rows: min-content;
-  grid-template-columns: repeat(4, minmax(0, max-content));
+  grid-template-columns: repeat(3, minmax(0, max-content));
   gap: 0 2px;
   align-content: start;
-  justify-content: start;
-  max-height: 16px;
+  justify-content: end;
+  max-height: 22px;
   overflow: hidden;
   color: #64748b;
   font-size: clamp(5.8px, 1.25vw, 8px);
@@ -1620,39 +1623,43 @@ button:disabled {
 
 .mobile-palace-cell .palace-age-range {
   position: absolute;
-  bottom: 15px;
-  left: 3px;
+  bottom: 18px;
+  left: 50%;
   z-index: 2;
-  max-width: 42%;
+  max-width: 54%;
   overflow: hidden;
   color: #334155;
-  font-size: clamp(7px, 1.55vw, 10px);
+  font-size: clamp(7.5px, 1.55vw, 10px);
   font-weight: 800;
   line-height: 1;
+  text-align: center;
+  transform: translateX(-50%);
   white-space: nowrap;
 }
 
 .mobile-palace-cell .palace-name {
   position: absolute;
-  bottom: 3px;
-  left: 3px;
+  bottom: 4px;
+  left: 50%;
   z-index: 2;
-  max-width: 44%;
+  max-width: 56%;
   overflow: hidden;
-  color: #dc2626;
+  color: #d63a2f;
   font-size: clamp(7.5px, 1.65vw, 10.5px);
   font-weight: 900;
   line-height: 1;
+  text-align: center;
+  transform: translateX(-50%);
   white-space: nowrap;
 }
 
 .mobile-palace-cell .palace-side-meta {
   position: absolute;
-  right: 3px;
-  bottom: 3px;
+  right: 4px;
+  bottom: 4px;
   z-index: 1;
-  max-width: 34%;
-  max-height: 34%;
+  max-width: 28%;
+  max-height: 28%;
   overflow: hidden;
   color: #475569;
   font-size: clamp(5.8px, 1.25vw, 8px);
@@ -1671,41 +1678,80 @@ button:disabled {
   top: 50%;
   left: 50%;
   z-index: 5;
-  width: 46%;
-  height: 26%;
+  width: 42%;
+  height: 23%;
   overflow: hidden;
   transform: translate(-50%, -50%);
-  border: 1px solid rgba(120, 130, 140, 0.45);
-  border-radius: 8px;
-  background: rgba(238, 241, 245, 0.96);
-  color: #334155;
-  font-size: clamp(6px, 1.35vw, 9px);
-  line-height: 1.15;
-  padding: 4px;
+  border: 1px solid #c9d1dc;
+  border-radius: 14px;
+  background: #eef1f5;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  color: #1f2937;
+  padding: 6px 7px;
 }
 
-.mobile-center-panel-inner {
+.center-info-card {
   display: flex;
-  width: 76%;
-  height: 76%;
+  width: 100%;
+  height: 100%;
   flex-direction: column;
-  justify-content: center;
-  gap: 1px;
-  margin: auto;
+  justify-content: space-between;
+  gap: 3px;
   overflow: hidden;
 }
 
-.mobile-center-panel b,
-.mobile-center-panel strong {
+.center-info-title {
+  margin: 0;
   color: #111827;
+  font-size: clamp(7.5px, 1.45vw, 10px);
   font-weight: 900;
+  line-height: 1;
+  text-align: left;
 }
 
-.mobile-center-panel span,
-.mobile-center-panel strong {
-  display: block;
+.center-info-grid {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.center-info-item {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 4px;
+  line-height: 1.12;
+}
+
+.center-info-item .label {
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: clamp(6px, 1.18vw, 8px);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.center-info-item .value {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
+  color: #1f2937;
+  font-size: clamp(6.3px, 1.22vw, 8.5px);
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.center-info-footer {
+  overflow: hidden;
+  color: #111827;
+  font-size: clamp(6.8px, 1.25vw, 8.8px);
+  font-weight: 900;
+  line-height: 1;
+  text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2069,24 +2115,27 @@ button:disabled {
   }
 
   .mobile-palace-cell .palace-main-stars {
-    right: 30%;
-    max-height: 26%;
+    right: auto;
+    width: 36%;
+    max-height: 36%;
   }
 
   .mobile-palace-cell .palace-minor-stars {
-    top: 25%;
-    max-height: 16%;
+    top: 21%;
+    width: 36%;
+    max-height: 26%;
   }
 
   .mobile-palace-cell .palace-misc-stars {
-    top: 42%;
-    right: 46%;
-    max-height: 16%;
+    top: 41%;
+    right: auto;
+    width: 36%;
+    max-height: 18%;
   }
 
   .mobile-palace-cell .palace-flow-tags {
     top: 54%;
-    max-width: 76%;
+    max-width: 56%;
   }
 
   .mobile-palace-cell .palace-flow-tag {
@@ -2095,17 +2144,17 @@ button:disabled {
   }
 
   .mobile-palace-cell .palace-age-sequence {
-    bottom: 17px;
+    bottom: 29px;
     max-height: 12px;
   }
 
   .mobile-palace-cell .palace-name {
-    bottom: 3px;
+    bottom: 4px;
   }
 
   .mobile-palace-cell .palace-side-meta {
-    max-width: 32%;
-    max-height: 28%;
+    max-width: 27%;
+    max-height: 26%;
   }
 }
 

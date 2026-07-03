@@ -78,10 +78,6 @@ function getRelation(index: number, selectedPalaceIndex: number | null): PalaceR
   return null;
 }
 
-function listText(items: string[]): string {
-  return items.length > 0 ? items.join(" ") : "";
-}
-
 const MUTAGEN_CLASS: Record<string, string> = {
   禄: "lu",
   权: "quan",
@@ -315,19 +311,37 @@ function CenterPanel({
   calendar: CalendarSummary;
   transitContext: TransitContext;
 }) {
+  const statusLabel = transitContext.label || "综合命盘";
+
   return (
     <div className="mobile-center-panel">
-      <div className="mobile-center-panel-inner">
-        <b>基本信息</b>
-        <span>{birthInfo.name || "未命名"} / {birthInfo.gender}</span>
-        <span>公历：{calendar.solarDate || astrolabe.solarDate}</span>
-        <span>农历：{calendar.lunarDate || astrolabe.lunarDate}</span>
-        <span>
-          命宫：{astrolabe.earthlyBranchOfSoulPalace} / 身宫：
-          {astrolabe.earthlyBranchOfBodyPalace}
-        </span>
-        <span>命主 / 身主：{astrolabe.soul} / {astrolabe.body}</span>
-        <strong>{transitContext.label || "综合命盘"}</strong>
+      <div className="center-info-card">
+        <div className="center-info-title">基本信息</div>
+        <div className="center-info-grid">
+          <div className="center-info-item">
+            <span className="label">姓名</span>
+            <span className="value">{birthInfo.name || "未命名"} / {birthInfo.gender}</span>
+          </div>
+          <div className="center-info-item">
+            <span className="label">公历</span>
+            <span className="value">{calendar.solarDate || astrolabe.solarDate}</span>
+          </div>
+          <div className="center-info-item">
+            <span className="label">农历</span>
+            <span className="value">{calendar.lunarDate || astrolabe.lunarDate}</span>
+          </div>
+          <div className="center-info-item">
+            <span className="label">命身</span>
+            <span className="value">
+              {astrolabe.earthlyBranchOfSoulPalace} / {astrolabe.earthlyBranchOfBodyPalace}
+            </span>
+          </div>
+          <div className="center-info-item">
+            <span className="label">命主</span>
+            <span className="value">{astrolabe.soul} / {astrolabe.body}</span>
+          </div>
+        </div>
+        <div className="center-info-footer">{statusLabel}</div>
       </div>
     </div>
   );

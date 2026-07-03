@@ -6,18 +6,28 @@ import type { CalendarSummary } from "@/lib/calendar";
 import { useDoubleTap } from "@/hooks/useDoubleTap";
 import type { BirthInfo } from "@/types/birth";
 import type { TransitContext } from "@/types/interpretation";
+import type { TimeSelection, TimeSelectionItem } from "@/components/TransitControls";
 import {
   buildPalaceViewModel,
+  getCycle,
   getHoroscope,
+  type HoroscopeData,
   type PalaceViewModel,
 } from "./palaceViewModel";
 import { PalaceZoomModal } from "./PalaceZoomModal";
+
+type RawPalace = AstrolabeResult["palaces"][number];
+type RawStar =
+  | RawPalace["majorStars"][number]
+  | RawPalace["minorStars"][number]
+  | RawPalace["adjectiveStars"][number];
 
 type MobileChartLayoutProps = {
   astrolabe: AstrolabeResult;
   birthInfo: BirthInfo;
   calendar: CalendarSummary;
   selectedPalaceIndex: number | null;
+  timeSelection?: TimeSelection;
   transitContext: TransitContext;
   targetDate: Date;
   transitHour: number;
@@ -72,19 +82,148 @@ function listText(items: string[]): string {
   return items.length > 0 ? items.join(" ") : "";
 }
 
+const MUTAGEN_CLASS: Record<string, string> = {
+  禄: "lu",
+  权: "quan",
+  科: "ke",
+  忌: "ji",
+};
+
+const POSITIVE_MINOR_STARS = new Set([
+  "左辅",
+  "右弼",
+  "文昌",
+  "文曲",
+  "天魁",
+  "天钺",
+  "禄存",
+  "天马",
+]);
+
+const NEGATIVE_MINOR_STARS = new Set([
+  "擎羊",
+  "陀罗",
+  "火星",
+  "铃星",
+  "地空",
+  "地劫",
+]);
+
+const FLOW_SCOPE_META: Array<{
+  key: keyof TimeSelection;
+  label: string;
+  className: string;
+}> = [
+  { key: "decadal", label: "大限", className: "decade" },
+  { key: "yearly", label: "流年", className: "year" },
+  { key: "monthly", label: "流月", className: "month" },
+  { key: "daily", label: "流日", className: "day" },
+  { key: "hourly", label: "流时", className: "hour" },
+];
+
+function getMinorStarTone(starName: string): string {
+  if (POSITIVE_MINOR_STARS.has(starName)) {
+    return "positive";
+  }
+
+  if (NEGATIVE_MINOR_STARS.has(starName)) {
+    return "negative";
+  }
+
+  return "";
+}
+
+function StarToken({
+  className,
+  star,
+}: {
+  className: string;
+  star: RawStar;
+}) {
+  return (
+    <span className={className}>
+      {star.name}
+      {star.brightness ? <em className="palace-brightness">{star.brightness}</em> : null}
+      {star.mutagen ? (
+        <b className={`palace-mutagen ${MUTAGEN_CLASS[star.mutagen] || ""}`}>
+          {star.mutagen}
+        </b>
+      ) : null}
+    </span>
+  );
+}
+
+function getFlowLabel(
+  item: TimeSelectionItem,
+  scope: keyof TimeSelection,
+  horoscope: HoroscopeData | undefined,
+): string {
+  const cycle = getCycle(horoscope, item.context.scope);
+  const cycleStem = [cycle?.heavenlyStem, cycle?.earthlyBranch].filter(Boolean).join("");
+
+  if (cycleStem) {
+    return cycleStem;
+  }
+
+  if (scope === "hourly") {
+    return item.label.replace("时", "");
+  }
+
+  return item.label.split(" ")[0] || item.context.label;
+}
+
+function getFlowTags({
+  horoscope,
+  palaceIndex,
+  timeSelection,
+}: {
+  horoscope: HoroscopeData | undefined;
+  palaceIndex: number;
+  timeSelection?: TimeSelection;
+}) {
+  return FLOW_SCOPE_META.flatMap(({ className, key, label }) => {
+    const item = timeSelection?.[key];
+    const cycle = item ? getCycle(horoscope, item.context.scope) : undefined;
+
+    if (!item || cycle?.index !== palaceIndex) {
+      return [];
+    }
+
+    return [
+      {
+        className,
+        key,
+        label: `${label}·${getFlowLabel(item, key, horoscope)}`,
+      },
+    ];
+  });
+}
+
 function MobilePalaceCell({
+  horoscope,
   onOpen,
   onSelect,
+  rawPalace,
   palace,
   relation,
+  timeSelection,
 }: {
+  rawPalace: RawPalace;
   palace: PalaceViewModel;
   relation: PalaceRelation;
+  horoscope: HoroscopeData | undefined;
+  timeSelection?: TimeSelection;
   onOpen: (palace: PalaceViewModel) => void;
   onSelect: (index: number) => void;
 }) {
   const doubleTapHandlers = useDoubleTap(() => onOpen(palace));
+  const flowTags = getFlowTags({
+    horoscope,
+    palaceIndex: palace.index,
+    timeSelection,
+  });
   const className = [
+    "palace-cell",
     "mobile-palace-cell",
     relation === "selected" ? "is-selected" : "",
     relation === "opposite" ? "is-opposite" : "",
@@ -108,17 +247,54 @@ function MobilePalaceCell({
       type="button"
       {...doubleTapHandlers}
     >
-      <span className="mobile-palace-head">
-        <b>{palace.palaceName}</b>
-        <em>{palace.stemBranch}</em>
+      <span className="palace-main-stars">
+        {rawPalace.majorStars.map((star) => (
+          <StarToken className="palace-main-star" key={`${star.name}-${star.mutagen || ""}`} star={star} />
+        ))}
       </span>
-      <span className="mobile-palace-stars is-major">{listText(palace.majorStars)}</span>
-      <span className="mobile-palace-stars">{listText(palace.minorStars)}</span>
-      <span className="mobile-palace-stars is-muted">{listText(palace.miscStars)}</span>
-      <span className="mobile-palace-stars is-flow">{listText(palace.flowStars)}</span>
-      <span className="mobile-palace-footer">
-        <b>{palace.decadalAgeRange}</b>
-        <em>{palace.triggerLabel}</em>
+
+      <span className="palace-branch">{palace.stemBranch}</span>
+
+      <span className="palace-minor-stars">
+        {rawPalace.minorStars.slice(0, 8).map((star) => (
+          <StarToken
+            className={`palace-minor-star ${getMinorStarTone(star.name)}`}
+            key={`${star.name}-${star.mutagen || ""}`}
+            star={star}
+          />
+        ))}
+      </span>
+
+      <span className="palace-misc-stars">
+        {rawPalace.adjectiveStars.slice(0, 6).map((star) => (
+          <StarToken className="palace-misc-star" key={`${star.name}-${star.mutagen || ""}`} star={star} />
+        ))}
+      </span>
+
+      <span className="palace-flow-tags">
+        {flowTags.map((tag) => (
+          <b className={`palace-flow-tag ${tag.className}`} key={tag.key}>
+            {tag.label}
+          </b>
+        ))}
+        {flowTags.length === 0 && palace.triggerLabel ? (
+          <b className="palace-flow-tag">{palace.triggerLabel}</b>
+        ) : null}
+      </span>
+
+      <span className="palace-age-sequence">
+        {palace.yearlyAges.slice(0, 8).join(" ")}
+      </span>
+
+      <span className="palace-age-range">{palace.decadalAgeRange}</span>
+      <span className="palace-name">{palace.palaceName}</span>
+
+      <span className="palace-side-meta">
+        {palace.gods.slice(0, 4).map((god) => (
+          <span className="palace-side-meta-line" key={god}>
+            {god.replace("长生:", "").replace("博士:", "").replace("将前:", "").replace("岁前:", "")}
+          </span>
+        ))}
       </span>
     </button>
   );
@@ -159,6 +335,7 @@ export function MobileChartLayout({
   calendar,
   onPalaceSelect,
   selectedPalaceIndex,
+  timeSelection,
   targetDate,
   transitContext,
   transitHour,
@@ -170,9 +347,10 @@ export function MobileChartLayout({
   );
   const palaces = useMemo(
     () =>
-      astrolabe.palaces.map((palace) =>
-        buildPalaceViewModel(palace, horoscope, transitContext),
-      ),
+      astrolabe.palaces.map((palace) => ({
+        rawPalace: palace,
+        viewModel: buildPalaceViewModel(palace, horoscope, transitContext),
+      })),
     [astrolabe.palaces, horoscope, transitContext],
   );
   const handleOpen = useCallback((palace: PalaceViewModel) => {
@@ -190,13 +368,16 @@ export function MobileChartLayout({
       </div>
 
       <div className="mobile-chart-board" aria-label="移动端紫微斗数命盘">
-        {palaces.map((palace) => (
+        {palaces.map(({ rawPalace, viewModel }) => (
           <MobilePalaceCell
-            key={palace.index}
+            horoscope={horoscope}
+            key={viewModel.index}
             onOpen={handleOpen}
             onSelect={onPalaceSelect}
-            palace={palace}
-            relation={getRelation(palace.index, selectedPalaceIndex)}
+            palace={viewModel}
+            rawPalace={rawPalace}
+            relation={getRelation(viewModel.index, selectedPalaceIndex)}
+            timeSelection={timeSelection}
           />
         ))}
 

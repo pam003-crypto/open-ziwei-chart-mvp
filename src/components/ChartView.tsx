@@ -551,6 +551,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
             onPalaceSelect={handleMobilePalaceSelect}
             selectedPalaceIndex={selectedPalaceIndex}
             targetDate={transitDate}
+            timeSelection={timeSelection}
             transitContext={transitContext}
             transitHour={transitHour}
           />

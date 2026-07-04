@@ -5,6 +5,7 @@ import {
   type TransitControlsProps,
   type TransitRowData,
 } from "@/components/TransitControls";
+import { hapticLight } from "@/lib/haptics";
 
 function MobileTransitRow({ row }: { row: TransitRowData }) {
   return (
@@ -16,7 +17,10 @@ function MobileTransitRow({ row }: { row: TransitRowData }) {
             <button
               className={cell.active ? "mobile-time-chip is-active" : "mobile-time-chip"}
               key={cell.key}
-              onClick={cell.onClick}
+              onClick={() => {
+                hapticLight();
+                cell.onClick?.();
+              }}
               type="button"
             >
               <span className="mobile-time-chip-primary">{cell.title}</span>

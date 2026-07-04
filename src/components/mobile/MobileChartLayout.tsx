@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { AstrolabeResult } from "@/lib/astrolabe";
 import type { CalendarSummary } from "@/lib/calendar";
 import { useDoubleTap } from "@/hooks/useDoubleTap";
@@ -15,6 +15,7 @@ import {
   type PalaceViewModel,
 } from "./palaceViewModel";
 import { PalaceZoomModal } from "./PalaceZoomModal";
+import { hapticLight } from "@/lib/haptics";
 
 type RawPalace = AstrolabeResult["palaces"][number];
 type RawStar =
@@ -214,7 +215,7 @@ function MobilePalaceCell({
   onOpen: (palace: PalaceViewModel) => void;
   onSelect: (index: number) => void;
 }) {
-  const doubleTapHandlers = useDoubleTap(() => onOpen(palace));
+  const longPressTimerRef = useRef<number | null>(null);
   const flowTags = getFlowTags({
     horoscope,
     palaceIndex: palace.index,
@@ -231,15 +232,40 @@ function MobilePalaceCell({
   ]
     .filter(Boolean)
     .join(" ");
+  const clearLongPress = () => {
+    if (longPressTimerRef.current !== null) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+  const openZoom = () => {
+    hapticLight();
+    onOpen(palace);
+  };
+  const doubleTapHandlers = useDoubleTap(openZoom);
 
   return (
     <button
       aria-label={`${palace.palaceName}宫，双击放大查看`}
       className={className}
       onClick={() => onSelect(palace.index)}
+      onContextMenu={(event) => event.preventDefault()}
       onDoubleClick={(event) => {
         event.preventDefault();
-        onOpen(palace);
+        openZoom();
+      }}
+      onPointerCancel={clearLongPress}
+      onPointerDown={(event) => {
+        if (event.pointerType === "mouse") {
+          return;
+        }
+
+        clearLongPress();
+        longPressTimerRef.current = window.setTimeout(openZoom, 520);
+      }}
+      onPointerLeave={clearLongPress}
+      onPointerUp={() => {
+        clearLongPress();
       }}
       style={PALACE_POSITIONS[palace.index]}
       type="button"

@@ -29,6 +29,7 @@ import { CurrentContextBar } from "./mobile/CurrentContextBar";
 import { MobileChartLayout } from "./mobile/MobileChartLayout";
 import { MobileTimeNavigator } from "./mobile/MobileTimeNavigator";
 import { MobileTopBar } from "./mobile/MobileTopBar";
+import { hapticLight } from "@/lib/haptics";
 import type { BirthInfo } from "@/types/birth";
 import type { TransitContext } from "@/types/interpretation";
 
@@ -382,6 +383,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       return;
     }
 
+    hapticLight();
     setSelectedPalaceIndex((currentIndex) =>
       currentIndex === palaceIndex ? null : palaceIndex,
     );
@@ -468,10 +470,35 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   );
 
   const handleMobilePalaceSelect = useCallback((palaceIndex: number) => {
+    hapticLight();
     setSelectedPalaceIndex((currentIndex) =>
       currentIndex === palaceIndex ? null : palaceIndex,
     );
   }, []);
+
+  const handleInterpretationPalaceSelect = useCallback((palaceName: string) => {
+    if (!chartState.ok) {
+      return;
+    }
+
+    const normalizedName = palaceName.replace("宫", "");
+    const palace = chartState.astrolabe.palaces.find(
+      (item) => item.name.replace("宫", "") === normalizedName,
+    );
+
+    if (!palace) {
+      return;
+    }
+
+    hapticLight();
+    setSelectedPalaceIndex(palace.index);
+    window.requestAnimationFrame(() => {
+      document.querySelector(".mobile-chart-view, .chart-frame")?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
+  }, [chartState]);
 
   if (!birthInfo) {
     return (
@@ -526,7 +553,13 @@ export function ChartView({ birthInfo }: ChartViewProps) {
     return (
       <section className="chart-shell mobile-chart-shell">
         <div className="mobile-layout">
-          <MobileTopBar value={chartMode} onChange={setChartMode} />
+          <MobileTopBar
+            value={chartMode}
+            onChange={(mode) => {
+              hapticLight();
+              setChartMode(mode);
+            }}
+          />
 
           <CurrentContextBar
             timeSelection={timeSelection}
@@ -558,6 +591,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
           <InterpretationPanel
             astrolabe={astrolabe}
+            onPalaceSelect={handleInterpretationPalaceSelect}
             selectedPalaceId={selectedPalaceIndex}
             targetDate={transitDate}
             transitContext={transitContext}
@@ -583,13 +617,17 @@ export function ChartView({ birthInfo }: ChartViewProps) {
           <h2 className="section-title mt-2">排盘结果</h2>
         </div>
 
-        <div className="chart-mode-switch" aria-label="命盘显示模式">
+        <div className="chart-mode-switch mode-switch" data-mode={chartMode} aria-label="命盘显示模式">
+          <span className="mode-active-indicator" />
           {CHART_MODE_OPTIONS.map((option) => (
             <button
               aria-pressed={chartMode === option.value}
-              className={chartMode === option.value ? "is-active" : ""}
+              className={chartMode === option.value ? "mode-button is-active" : "mode-button"}
               key={option.value}
-              onClick={() => setChartMode(option.value)}
+              onClick={() => {
+                hapticLight();
+                setChartMode(option.value);
+              }}
               type="button"
             >
               {option.label}
@@ -688,6 +726,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
           <InterpretationPanel
             astrolabe={astrolabe}
+            onPalaceSelect={handleInterpretationPalaceSelect}
             transitContext={transitContext}
             targetDate={transitDate}
             transitHour={transitHour}

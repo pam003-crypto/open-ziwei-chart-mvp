@@ -4,6 +4,7 @@ import { Lunar, Solar } from "lunar-javascript";
 import type { AstrolabeResult } from "@/lib/astrolabe";
 import { BIRTH_HOURS } from "@/types/birth";
 import type { TransitContext } from "@/types/interpretation";
+import { hapticLight } from "@/lib/haptics";
 
 export type TransitControlsProps = {
   astrolabe: AstrolabeResult;
@@ -182,7 +183,10 @@ function TransitRow({
             className={cell.active ? "transit-cell is-active" : "transit-cell"}
             key={cell.key}
             type="button"
-            onClick={cell.onClick}
+            onClick={() => {
+              hapticLight();
+              cell.onClick?.();
+            }}
           >
             <span>{cell.title}</span>
             {cell.subtitle ? <small>{cell.subtitle}</small> : null}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BirthForm } from "@/components/BirthForm";
 import { ChartView } from "@/components/ChartView";
 import { ProfileList } from "@/components/ProfileList";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import type { BirthInfo } from "@/types/birth";
 import type { Profile } from "@/types/profile";
 
@@ -56,10 +57,15 @@ export default function Home() {
             isMobileResultView ? "max-lg:hidden" : ""
           }`}
         >
-          <p className="section-kicker">Open Ziwei Chart MVP</p>
-          <h1 className="app-title text-2xl font-semibold tracking-normal text-stone-50 sm:text-3xl">
-            紫微斗数排盘工具
-          </h1>
+          <div className="app-header-row">
+            <div>
+              <p className="section-kicker">Open Ziwei Chart MVP</p>
+              <h1 className="app-title text-2xl font-semibold tracking-normal text-stone-50 sm:text-3xl">
+                紫微斗数排盘工具
+              </h1>
+            </div>
+            <ThemeToggle />
+          </div>
         </header>
 
         <div className="app-layout grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">

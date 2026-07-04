@@ -12,6 +12,7 @@ import type {
 
 type InterpretationPanelProps = {
   astrolabe: AstrolabeResult;
+  onPalaceSelect?: (palaceName: string) => void;
   transitContext: TransitContext;
   targetDate: Date;
   transitHour: number;
@@ -31,16 +32,45 @@ const SECTION_LABELS: Array<{ key: SectionKey; title: string }> = [
   { key: "advice", title: "行动建议" },
 ];
 
-function PalaceGroup({ label, palaces }: { label: string; palaces: PalaceBrief[] }) {
+const PALACE_NAMES = [
+  "命宫",
+  "兄弟",
+  "夫妻",
+  "子女",
+  "财帛",
+  "疾厄",
+  "迁移",
+  "交友",
+  "官禄",
+  "田宅",
+  "福德",
+  "父母",
+];
+
+function PalaceGroup({
+  label,
+  onPalaceSelect,
+  palaces,
+}: {
+  label: string;
+  onPalaceSelect?: (palaceName: string) => void;
+  palaces: PalaceBrief[];
+}) {
   return (
     <div className="interpretation-palace-group">
       <span>{label}</span>
       {palaces.length > 0 ? (
         palaces.map((palace) => (
-          <b key={palace.palaceName} title={palace.reason}>
+          <button
+            className="evidence-chip"
+            key={palace.palaceName}
+            title={palace.reason}
+            type="button"
+            onClick={() => onPalaceSelect?.(palace.palaceName)}
+          >
             {palace.palaceName}
             <small>{palace.score}</small>
-          </b>
+          </button>
         ))
       ) : (
         <b>暂无明显集中点</b>
@@ -49,7 +79,42 @@ function PalaceGroup({ label, palaces }: { label: string; palaces: PalaceBrief[]
   );
 }
 
-function InterpretationContent({ section }: { section: InterpretationSection }) {
+function findPalaceName(text: string): string | undefined {
+  return PALACE_NAMES.find((palaceName) => text.includes(palaceName));
+}
+
+function EvidenceItem({
+  evidence,
+  onPalaceSelect,
+}: {
+  evidence: string;
+  onPalaceSelect?: (palaceName: string) => void;
+}) {
+  const palaceName = findPalaceName(evidence);
+
+  return (
+    <li>
+      {palaceName ? (
+        <button
+          className="evidence-chip"
+          type="button"
+          onClick={() => onPalaceSelect?.(palaceName)}
+        >
+          {palaceName}
+        </button>
+      ) : null}
+      <span>{evidence}</span>
+    </li>
+  );
+}
+
+function InterpretationContent({
+  onPalaceSelect,
+  section,
+}: {
+  onPalaceSelect?: (palaceName: string) => void;
+  section: InterpretationSection;
+}) {
   return (
     <>
       <div className="interpretation-card-block">
@@ -61,7 +126,11 @@ function InterpretationContent({ section }: { section: InterpretationSection }) 
         <span>依据</span>
         <ol>
           {section.evidences.map((evidence) => (
-            <li key={evidence}>{evidence}</li>
+            <EvidenceItem
+              evidence={evidence}
+              key={evidence}
+              onPalaceSelect={onPalaceSelect}
+            />
           ))}
         </ol>
       </div>
@@ -81,8 +150,10 @@ function InterpretationContent({ section }: { section: InterpretationSection }) 
 function InterpretationCard({
   section,
   sectionKey,
+  onPalaceSelect,
   variant,
 }: {
+  onPalaceSelect?: (palaceName: string) => void;
   section: InterpretationSection;
   sectionKey: SectionKey;
   variant: "desktop" | "mobile";
@@ -93,7 +164,7 @@ function InterpretationCard({
     return (
       <details className="interpretation-card interpretation-accordion" open={defaultOpen}>
         <summary>{section.title}</summary>
-        <InterpretationContent section={section} />
+        <InterpretationContent onPalaceSelect={onPalaceSelect} section={section} />
       </details>
     );
   }
@@ -101,13 +172,14 @@ function InterpretationCard({
   return (
     <article className="interpretation-card">
       <h3>{section.title}</h3>
-      <InterpretationContent section={section} />
+      <InterpretationContent onPalaceSelect={onPalaceSelect} section={section} />
     </article>
   );
 }
 
 export function InterpretationPanel({
   astrolabe,
+  onPalaceSelect,
   transitContext,
   targetDate,
   transitHour,
@@ -143,14 +215,23 @@ export function InterpretationPanel({
       <p className="interpretation-disclaimer">{result.summary}</p>
 
       <div className="interpretation-palaces" aria-label="重点宫位">
-        <PalaceGroup label="主线宫位" palaces={result.primaryPalaces} />
-        <PalaceGroup label="辅助宫位" palaces={result.secondaryPalaces} />
+        <PalaceGroup
+          label="主线宫位"
+          onPalaceSelect={onPalaceSelect}
+          palaces={result.primaryPalaces}
+        />
+        <PalaceGroup
+          label="辅助宫位"
+          onPalaceSelect={onPalaceSelect}
+          palaces={result.secondaryPalaces}
+        />
       </div>
 
       <div className={variant === "mobile" ? "interpretation-grid is-accordion" : "interpretation-grid"}>
         {SECTION_LABELS.map(({ key, title }) => (
           <InterpretationCard
             key={key}
+            onPalaceSelect={onPalaceSelect}
             sectionKey={key}
             variant={variant}
             section={{

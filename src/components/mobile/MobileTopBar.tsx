@@ -1,5 +1,7 @@
 "use client";
 
+import { ThemeToggle } from "@/components/ThemeToggle";
+
 type ChartDisplayMode = "simple" | "full" | "debug";
 
 const OPTIONS: Array<{ value: ChartDisplayMode; label: string }> = [
@@ -16,11 +18,12 @@ type MobileTopBarProps = {
 export function MobileTopBar({ value, onChange }: MobileTopBarProps) {
   return (
     <header className="mobile-top-bar mobile-safe-top">
-      <div className="mobile-top-bar-inner" aria-label="命盘显示模式">
+      <div className="mobile-top-bar-inner mode-switch" data-mode={value} aria-label="命盘显示模式">
+        <span className="mode-active-indicator" />
         {OPTIONS.map((option) => (
           <button
             aria-pressed={value === option.value}
-            className={value === option.value ? "is-active" : ""}
+            className={value === option.value ? "mode-button is-active" : "mode-button"}
             key={option.value}
             onClick={() => onChange(option.value)}
             type="button"
@@ -29,6 +32,7 @@ export function MobileTopBar({ value, onChange }: MobileTopBarProps) {
           </button>
         ))}
       </div>
+      <ThemeToggle compact />
     </header>
   );
 }

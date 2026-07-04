@@ -1,0 +1,47 @@
+:root {
+  color-scheme: dark;
+
+  --bg-app: #050607;
+  --bg-app-soft: #090b0d;
+  --bg-panel: #0e0f11;
+  --bg-panel-soft: #14161a;
+  --bg-card: #111315;
+  --bg-card-soft: rgba(255, 255, 255, 0.025);
+  --bg-chart: #fffaf0;
+  --bg-chart-center: #eef1f5;
+
+  --text-primary: #f3f4f6;
+  --text-secondary: #c7cbd1;
+  --text-muted: #8892a0;
+  --text-dark: #1f2937;
+
+  --line-soft: rgba(255, 255, 255, 0.08);
+  --line-panel: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --line-chart: #cfd6df;
+
+  --accent: #49d0a5;
+  --accent-strong: #2cbc91;
+  --accent-soft: rgba(73, 208, 165, 0.14);
+  --accent-line: rgba(73, 208, 165, 0.28);
+
+  --danger: #d5483f;
+  --danger-strong: #c92a2a;
+  --danger-soft: rgba(213, 72, 63, 0.14);
+
+  --blue: #2563eb;
+  --blue-soft: rgba(37, 99, 235, 0.14);
+  --cyan: #0891b2;
+  --purple: #6d28d9;
+  --slate: #64748b;
+
+  --radius-panel: 20px;
+  --radius-card: 16px;
+  --radius-control: 14px;
+  --radius-chip: 999px;
+  --radius-chart: 16px;
+
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.22);
+  --shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.18);
+  --transition-fast: 160ms ease;
+}

@@ -131,22 +131,22 @@ export function ProfileList({
       </div>
 
       {message ? (
-        <p className="rounded-md border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-100">
+        <p className="profile-message rounded-md border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-100">
           {message}
         </p>
       ) : null}
 
       <div className="space-y-3">
         {profiles.length === 0 ? (
-          <p className="rounded-md border border-dashed border-stone-700 px-4 py-6 text-center text-sm text-stone-400">
+          <p className="profile-empty rounded-md border border-dashed border-stone-700 px-4 py-6 text-center text-sm text-stone-400">
             暂无保存命例
           </p>
         ) : (
           profiles.map((profile) => (
             <article
-              className={`rounded-md border p-3 ${
+              className={`profile-card rounded-md border p-3 ${
                 profile.id === currentProfileId
-                  ? "border-emerald-400/60 bg-emerald-500/10"
+                  ? "is-active border-emerald-400/60 bg-emerald-500/10"
                   : "border-stone-800 bg-stone-950/60"
               }`}
               key={profile.id}

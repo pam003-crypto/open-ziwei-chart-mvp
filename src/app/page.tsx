@@ -49,22 +49,22 @@ export default function Home() {
   const isMobileResultView = mobileView === "chart" && birthInfo !== null;
 
   return (
-    <main className="mobile-page min-h-screen bg-stone-950 text-stone-100">
-      <div className="mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-3 py-3 md:px-4 md:py-6 lg:px-6">
+    <main className="mobile-page app-shell min-h-screen bg-stone-950 text-stone-100">
+      <div className="app-container mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-3 py-3 md:px-4 md:py-6 lg:px-6">
         <header
-          className={`flex flex-col gap-2 border-b border-stone-800 pb-5 ${
+          className={`app-header flex flex-col gap-2 border-b border-stone-800 pb-5 ${
             isMobileResultView ? "max-lg:hidden" : ""
           }`}
         >
           <p className="section-kicker">Open Ziwei Chart MVP</p>
-          <h1 className="text-2xl font-semibold tracking-normal text-stone-50 sm:text-3xl">
+          <h1 className="app-title text-2xl font-semibold tracking-normal text-stone-50 sm:text-3xl">
             紫微斗数排盘工具
           </h1>
         </header>
 
-        <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+        <div className="app-layout grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
           <aside
-            className={`space-y-6 ${
+            className={`app-sidebar space-y-6 ${
               isMobileResultView ? "max-lg:hidden" : ""
             }`}
           >

@@ -598,7 +598,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
         </div>
       </div>
 
-      <dl className="grid gap-4 rounded-md border border-stone-800 bg-stone-950/70 p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <dl className="chart-info-grid grid gap-4 rounded-md border border-stone-800 bg-stone-950/70 p-4 sm:grid-cols-2 lg:grid-cols-4">
         <InfoItem label="姓名" value={birthInfo.name} />
         <InfoItem label="性别" value={birthInfo.gender} />
         <InfoItem label="公历日期" value={calendar.solarDate || astrolabe.solarDate} />
@@ -620,7 +620,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       </dl>
 
       {birthInfo.note ? (
-        <p className="rounded-md border border-stone-800 bg-stone-950/70 px-4 py-3 text-sm leading-6 text-stone-300">
+        <p className="chart-note rounded-md border border-stone-800 bg-stone-950/70 px-4 py-3 text-sm leading-6 text-stone-300">
           {birthInfo.note}
         </p>
       ) : null}

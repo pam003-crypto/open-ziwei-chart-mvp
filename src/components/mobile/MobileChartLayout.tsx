@@ -117,6 +117,8 @@ const FLOW_SCOPE_META: Array<{
   { key: "hourly", label: "流时", className: "hour" },
 ];
 
+const MOBILE_MISC_STAR_LIMIT = 5;
+
 function getMinorStarTone(starName: string): string {
   if (POSITIVE_MINOR_STARS.has(starName)) {
     return "positive";
@@ -262,7 +264,7 @@ function MobilePalaceCell({
       </span>
 
       <span className="palace-misc-stars">
-        {rawPalace.adjectiveStars.slice(0, 6).map((star) => (
+        {rawPalace.adjectiveStars.slice(0, MOBILE_MISC_STAR_LIMIT).map((star) => (
           <StarToken className="palace-misc-star" key={`${star.name}-${star.mutagen || ""}`} star={star} />
         ))}
       </span>

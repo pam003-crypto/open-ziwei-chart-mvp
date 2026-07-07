@@ -20,7 +20,7 @@ npm install
 npm run dev
 ```
 
-如需使用 AI 解读，请复制 `.env.local.example` 为 `.env.local`，并配置：
+如需在本地或服务端部署中使用 AI 解读，请复制 `.env.local.example` 为 `.env.local`，并配置：
 
 ```bash
 OPENAI_API_KEY=你的_OPENAI_API_KEY
@@ -39,7 +39,7 @@ npm run build
 
 [https://pam003-crypto.github.io/open-ziwei-chart-mvp/](https://pam003-crypto.github.io/open-ziwei-chart-mvp/)
 
-注意：GitHub Pages 是静态托管，不能执行 Next.js API Route。AI 解读按钮需要在支持服务端 API 的环境中运行，例如本地 `npm run dev` 或后续部署到 Vercel / Node 服务。
+注意：GitHub Pages 是静态托管，不能执行 Next.js API Route。页面提供了“AI 设置”，可切换为自定义代理 API 或个人浏览器本地 Key 模式进行预览。公开站点不建议在浏览器中长期保存 API Key；更稳妥的方式是部署到 Vercel / Node 服务，并把 Key 放在服务器环境变量里。
 
 ## 当前功能
 
@@ -53,6 +53,7 @@ npm run build
 - JSON 导入导出
 - 本地规则解读
 - 基于本地规则结果的 AI 解读入口
+- 网页端 AI 设置：服务端默认 / 自定义代理 / 浏览器本地 Key
 
 ## 后续计划
 

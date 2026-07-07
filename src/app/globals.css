@@ -2968,6 +2968,116 @@ body {
   margin-top: 14px;
 }
 
+.ai-settings-panel {
+  margin-top: 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 12px;
+}
+
+.ai-settings-panel > summary {
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 900;
+  list-style: none;
+}
+
+.ai-settings-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ai-settings-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.ai-settings-grid label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ai-settings-grid label > span,
+.ai-settings-checkbox span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ai-settings-grid input,
+.ai-settings-grid select {
+  min-height: 36px;
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--line-panel);
+  border-radius: var(--radius-control);
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  outline: none;
+  padding: 0 10px;
+}
+
+.ai-settings-grid input:focus,
+.ai-settings-grid select:focus {
+  border-color: rgba(73, 208, 165, 0.42);
+  box-shadow: 0 0 0 3px rgba(73, 208, 165, 0.08);
+}
+
+.ai-settings-wide {
+  grid-column: 1 / -1;
+}
+
+.ai-settings-checkbox {
+  display: flex !important;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.ai-settings-checkbox input {
+  min-height: auto;
+  width: auto;
+}
+
+.ai-settings-warning {
+  border: 1px solid rgba(251, 191, 36, 0.24);
+  border-radius: var(--radius-card);
+  background: rgba(251, 191, 36, 0.08);
+  color: #fde68a;
+  font-size: 12px;
+  line-height: 1.65;
+  margin: 0;
+  padding: 10px 12px;
+}
+
+.ai-settings-note {
+  align-self: end;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.ai-settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.ai-settings-actions span {
+  color: #a7f3d0;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .ai-primary-button,
 .ai-secondary-button {
   min-height: 38px;
@@ -3106,6 +3216,15 @@ body {
   }
 
   .ai-action-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .ai-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-settings-actions {
     display: grid;
     grid-template-columns: 1fr;
   }

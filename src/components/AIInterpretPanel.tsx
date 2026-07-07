@@ -5,6 +5,15 @@ import {
   getAIInterpretCache,
   setAIInterpretCache,
 } from "@/lib/ai/aiInterpretCache";
+import {
+  clearAISettings,
+  DEFAULT_AI_SETTINGS,
+  loadAISettings,
+  saveAISettings,
+  type AIConnectionMode,
+  type AISettings,
+} from "@/lib/ai/aiSettings";
+import { requestAIInterpret } from "@/lib/ai/requestAIInterpret";
 import type {
   AIInterpretRequest,
   AIInterpretResponse,
@@ -34,18 +43,14 @@ const SECTION_LABELS: Array<{ key: AISignalDomain; label: string }> = [
   { key: "advice", label: "建议" },
 ];
 
+const CONNECTION_OPTIONS: Array<{ value: AIConnectionMode; label: string }> = [
+  { value: "server", label: "服务端默认" },
+  { value: "custom", label: "自定义代理" },
+  { value: "browser", label: "浏览器本地 Key" },
+];
+
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "AI 解读生成失败";
-}
-
-async function readErrorMessage(response: Response): Promise<string> {
-  try {
-    const payload = (await response.json()) as { error?: string };
-
-    return payload.error || "AI 解读生成失败";
-  } catch {
-    return "AI 解读暂时不可用，请确认服务端 API 已部署并配置 OPENAI_API_KEY。";
-  }
 }
 
 function buildCopyText(response: AIInterpretResponse): string {
@@ -90,6 +95,8 @@ export function AIInterpretPanel({
   variant = "desktop",
 }: AIInterpretPanelProps) {
   const [style, setStyle] = useState<AIInterpretStyle>("professional");
+  const [settings, setSettings] = useState<AISettings>(DEFAULT_AI_SETTINGS);
+  const [settingsSaved, setSettingsSaved] = useState(false);
   const [response, setResponse] = useState<AIInterpretResponse | null>(null);
   const [cachedAt, setCachedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +109,10 @@ export function AIInterpretPanel({
     }),
     [request, style],
   );
+
+  useEffect(() => {
+    setSettings(loadAISettings());
+  }, []);
 
   useEffect(() => {
     const cached = getAIInterpretCache(styledRequest);
@@ -119,6 +130,24 @@ export function AIInterpretPanel({
     setCachedAt(null);
   }, [styledRequest]);
 
+  const updateSettings = (nextSettings: Partial<AISettings>) => {
+    setSettingsSaved(false);
+    setSettings((current) => ({
+      ...current,
+      ...nextSettings,
+    }));
+  };
+
+  const saveSettings = () => {
+    saveAISettings(settings);
+    setSettingsSaved(true);
+  };
+
+  const resetSettings = () => {
+    setSettings(clearAISettings());
+    setSettingsSaved(false);
+  };
+
   const generateInterpretation = async (force = false) => {
     const cached = force ? null : getAIInterpretCache(styledRequest);
 
@@ -133,19 +162,7 @@ export function AIInterpretPanel({
     setCopied(false);
 
     try {
-      const apiResponse = await fetch("api/ai-interpret", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(styledRequest),
-      });
-
-      if (!apiResponse.ok) {
-        throw new Error(await readErrorMessage(apiResponse));
-      }
-
-      const payload = (await apiResponse.json()) as AIInterpretResponse;
+      const payload = await requestAIInterpret(styledRequest, settings);
 
       setResponse(payload);
       setCachedAt(new Date().toISOString());
@@ -193,6 +210,94 @@ export function AIInterpretPanel({
           </select>
         </label>
       </div>
+
+      <details className="ai-settings-panel">
+        <summary>AI 设置</summary>
+
+        <div className="ai-settings-grid">
+          <label>
+            <span>连接方式</span>
+            <select
+              value={settings.mode}
+              onChange={(event) =>
+                updateSettings({ mode: event.target.value as AIConnectionMode })
+              }
+            >
+              {CONNECTION_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {settings.mode === "server" ? (
+            <p className="ai-settings-note">
+              使用当前站点服务端 API。模型和 Key 由服务器环境变量决定。
+            </p>
+          ) : null}
+
+          {settings.mode === "custom" ? (
+            <label className="ai-settings-wide">
+              <span>代理 API 地址</span>
+              <input
+                value={settings.endpoint}
+                onChange={(event) => updateSettings({ endpoint: event.target.value })}
+                placeholder="https://你的域名/api/ai-interpret"
+                type="url"
+              />
+            </label>
+          ) : null}
+
+          {settings.mode === "browser" ? (
+            <>
+              <label>
+                <span>模型</span>
+                <input
+                  value={settings.model}
+                  onChange={(event) => updateSettings({ model: event.target.value })}
+                  placeholder="gpt-5.5-mini"
+                  type="text"
+                />
+              </label>
+
+              <label className="ai-settings-wide">
+                <span>API Key</span>
+                <input
+                  autoComplete="off"
+                  value={settings.apiKey ?? ""}
+                  onChange={(event) => updateSettings({ apiKey: event.target.value })}
+                  placeholder="sk-..."
+                  type="password"
+                />
+              </label>
+
+              <label className="ai-settings-checkbox ai-settings-wide">
+                <input
+                  checked={settings.rememberKey}
+                  onChange={(event) => updateSettings({ rememberKey: event.target.checked })}
+                  type="checkbox"
+                />
+                <span>记住到此浏览器。仅建议个人设备使用。</span>
+              </label>
+
+              <p className="ai-settings-warning ai-settings-wide">
+                浏览器本地 Key 适合个人预览；公开网站不建议这样使用。更稳妥的方式是部署服务端代理，把 Key 放在服务器环境变量里。
+              </p>
+            </>
+          ) : null}
+        </div>
+
+        <div className="ai-settings-actions">
+          <button className="ai-secondary-button" type="button" onClick={saveSettings}>
+            保存设置
+          </button>
+          <button className="ai-secondary-button" type="button" onClick={resetSettings}>
+            清空设置
+          </button>
+          {settingsSaved ? <span>已保存</span> : null}
+        </div>
+      </details>
 
       <div className="ai-action-row">
         <button

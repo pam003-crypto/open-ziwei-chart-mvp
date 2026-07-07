@@ -650,10 +650,13 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
           <InterpretationPanel
             astrolabe={astrolabe}
+            birthInfo={birthInfo}
+            calendar={calendar}
             onPalaceHover={handleInterpretationPalaceHover}
             onPalaceSelect={handleInterpretationPalaceSelect}
             selectedPalaceId={selectedPalaceIndex}
             targetDate={transitDate}
+            timeSelection={timeSelection}
             transitContext={transitContext}
             transitHour={transitHour}
             variant="mobile"
@@ -786,10 +789,13 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
           <InterpretationPanel
             astrolabe={astrolabe}
+            birthInfo={birthInfo}
+            calendar={calendar}
             onPalaceHover={handleInterpretationPalaceHover}
             onPalaceSelect={handleInterpretationPalaceSelect}
             transitContext={transitContext}
             targetDate={transitDate}
+            timeSelection={timeSelection}
             transitHour={transitHour}
             selectedPalaceId={selectedPalaceIndex}
           />

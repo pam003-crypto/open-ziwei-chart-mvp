@@ -5,6 +5,7 @@ import type {
   InterpretOptions,
   InterpretationResult,
   InterpretationScope,
+  RuleEngineResult,
   TransitContext,
 } from "./types";
 
@@ -32,9 +33,19 @@ export function resolveInterpretationScope(context?: TransitContext): Interpreta
   return "hour";
 }
 
-export function interpret(options: InterpretOptions): InterpretationResult {
+export function interpretWithRuleResult(options: InterpretOptions): {
+  result: InterpretationResult;
+  ruleResult: RuleEngineResult;
+} {
   const input = collectInterpretationInput(options);
   const ruleResult = runRuleEngine(input);
 
-  return renderInterpretation(ruleResult);
+  return {
+    result: renderInterpretation(ruleResult),
+    ruleResult,
+  };
+}
+
+export function interpret(options: InterpretOptions): InterpretationResult {
+  return interpretWithRuleResult(options).result;
 }

@@ -1,20 +1,28 @@
 "use client";
 
 import { useMemo } from "react";
-import { interpret, resolveInterpretationScope } from "@/lib/interpretation/interpret";
+import { buildAIInterpretInput } from "@/lib/ai/buildAIInterpretInput";
+import { interpretWithRuleResult, resolveInterpretationScope } from "@/lib/interpretation/interpret";
 import type { AstrolabeResult } from "@/lib/astrolabe";
+import type { CalendarSummary } from "@/lib/calendar";
+import type { BirthInfo } from "@/types/birth";
 import type {
   InterpretationResult,
   InterpretationSection,
   PalaceBrief,
   TransitContext,
 } from "@/types/interpretation";
+import type { TimeSelection } from "./TransitControls";
+import { AIInterpretPanel } from "./AIInterpretPanel";
 
 type InterpretationPanelProps = {
   astrolabe: AstrolabeResult;
+  birthInfo?: BirthInfo;
+  calendar?: CalendarSummary;
   onPalaceSelect?: (palaceName: string) => void;
   onPalaceHover?: (palaceName: string | null) => void;
   transitContext: TransitContext;
+  timeSelection?: TimeSelection;
   targetDate: Date;
   transitHour: number;
   selectedPalaceId?: number | string | null;
@@ -205,17 +213,20 @@ function InterpretationCard({
 
 export function InterpretationPanel({
   astrolabe,
+  birthInfo,
+  calendar,
   onPalaceHover,
   onPalaceSelect,
+  timeSelection,
   transitContext,
   targetDate,
   transitHour,
   selectedPalaceId,
   variant = "desktop",
 }: InterpretationPanelProps) {
-  const result = useMemo(
+  const interpretationData = useMemo(
     () =>
-      interpret({
+      interpretWithRuleResult({
         astrolabe,
         scope: resolveInterpretationScope(transitContext),
         targetDate,
@@ -224,6 +235,19 @@ export function InterpretationPanel({
         transitContext,
       }),
     [astrolabe, transitContext, targetDate, transitHour, selectedPalaceId],
+  );
+  const { result, ruleResult } = interpretationData;
+  const aiInterpretRequest = useMemo(
+    () =>
+      buildAIInterpretInput({
+        astrolabe,
+        birthInfo,
+        calendar,
+        interpretation: result,
+        ruleResult,
+        selectedTime: timeSelection,
+      }),
+    [astrolabe, birthInfo, calendar, result, ruleResult, timeSelection],
   );
 
   return (
@@ -271,6 +295,8 @@ export function InterpretationPanel({
           />
         ))}
       </div>
+
+      <AIInterpretPanel request={aiInterpretRequest} variant={variant} />
     </section>
   );
 }

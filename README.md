@@ -20,6 +20,13 @@ npm install
 npm run dev
 ```
 
+如需使用 AI 解读，请复制 `.env.local.example` 为 `.env.local`，并配置：
+
+```bash
+OPENAI_API_KEY=你的_OPENAI_API_KEY
+OPENAI_MODEL=gpt-5.5-mini
+```
+
 ## 构建方法
 
 ```bash
@@ -32,6 +39,8 @@ npm run build
 
 [https://pam003-crypto.github.io/open-ziwei-chart-mvp/](https://pam003-crypto.github.io/open-ziwei-chart-mvp/)
 
+注意：GitHub Pages 是静态托管，不能执行 Next.js API Route。AI 解读按钮需要在支持服务端 API 的环境中运行，例如本地 `npm run dev` 或后续部署到 Vercel / Node 服务。
+
 ## 当前功能
 
 - 出生信息输入
@@ -42,6 +51,8 @@ npm run build
 - 命例重新载入
 - 命例删除
 - JSON 导入导出
+- 本地规则解读
+- 基于本地规则结果的 AI 解读入口
 
 ## 后续计划
 
@@ -50,5 +61,4 @@ npm run build
 - 闰月规则校准
 - 四化流派设置
 - 大限 / 流年详细展示
-- AI 解盘
 - PDF / PNG 导出

@@ -2880,6 +2880,206 @@ body {
   color: var(--text-dark) !important;
 }
 
+.ai-interpret-panel {
+  margin-top: 18px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-card);
+  background:
+    linear-gradient(180deg, rgba(16, 185, 129, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(255, 255, 255, 0.025);
+  color: var(--text-primary);
+  padding: 16px;
+}
+
+.ai-interpret-panel.is-mobile {
+  padding: 0;
+}
+
+.ai-interpret-panel.is-mobile > summary {
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 900;
+  list-style: none;
+  padding: 16px;
+}
+
+.ai-interpret-panel.is-mobile > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ai-interpret-panel.is-mobile[open] > summary {
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.ai-mobile-content {
+  margin: 16px;
+}
+
+.ai-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.ai-panel-header h3 {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.25;
+  margin: 6px 0 0;
+}
+
+.ai-panel-header p:not(.section-kicker) {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 8px 0 0;
+}
+
+.ai-style-select {
+  display: grid;
+  gap: 6px;
+  min-width: 108px;
+}
+
+.ai-style-select span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ai-style-select select {
+  min-height: 36px;
+  border: 1px solid var(--line-panel);
+  border-radius: var(--radius-control);
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 0 10px;
+}
+
+.ai-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ai-primary-button,
+.ai-secondary-button {
+  min-height: 38px;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 0 14px;
+  transition: transform var(--duration-fast) var(--ease-standard), filter var(--transition-fast), border-color var(--transition-fast);
+}
+
+.ai-primary-button {
+  border: 0;
+  background: linear-gradient(180deg, #62e2bd 0%, #2eb98d 100%);
+  color: #08110d;
+  box-shadow: 0 8px 22px rgba(73, 208, 165, 0.2);
+}
+
+.ai-secondary-button {
+  border: 1px solid var(--line-panel);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-secondary);
+}
+
+.ai-primary-button:hover,
+.ai-secondary-button:hover {
+  filter: brightness(1.04);
+}
+
+.ai-primary-button:active,
+.ai-secondary-button:active {
+  transform: scale(0.97);
+}
+
+.ai-cache-note,
+.ai-loading,
+.ai-error,
+.ai-disclaimer {
+  margin: 12px 0 0;
+  border-radius: var(--radius-card);
+  font-size: 13px;
+  line-height: 1.65;
+  padding: 10px 12px;
+}
+
+.ai-cache-note {
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background: rgba(59, 130, 246, 0.08);
+  color: #bfdbfe;
+}
+
+.ai-loading {
+  border: 1px solid rgba(73, 208, 165, 0.24);
+  background: rgba(73, 208, 165, 0.08);
+  color: #d7f8ea;
+}
+
+.ai-error {
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  background: rgba(239, 68, 68, 0.08);
+  color: #fecaca;
+}
+
+.ai-result {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.ai-summary-card,
+.ai-result-card {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--bg-card) 84%, transparent);
+  color: var(--text-dark);
+  padding: 14px;
+}
+
+.ai-summary-card h4 {
+  color: var(--text-dark);
+  font-size: 16px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.ai-summary-card p,
+.ai-result-card p {
+  color: #33413e;
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 8px 0 0;
+}
+
+.ai-result-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ai-result-card span {
+  color: var(--jade-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.ai-disclaimer {
+  border: 1px solid rgba(73, 208, 165, 0.22);
+  background: rgba(73, 208, 165, 0.08);
+  color: #d7f8ea;
+}
+
 @keyframes sheetFadeIn {
   from {
     opacity: 0;
@@ -2901,6 +3101,25 @@ body {
 }
 
 @media (max-width: 767px) {
+  .ai-panel-header {
+    display: grid;
+  }
+
+  .ai-action-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .ai-result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-summary-card p,
+  .ai-result-card p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
   .palace-zoom-backdrop {
     align-items: flex-end !important;
     padding: 0 !important;

@@ -13,6 +13,7 @@ import type {
 type InterpretationPanelProps = {
   astrolabe: AstrolabeResult;
   onPalaceSelect?: (palaceName: string) => void;
+  onPalaceHover?: (palaceName: string | null) => void;
   transitContext: TransitContext;
   targetDate: Date;
   transitHour: number;
@@ -49,10 +50,12 @@ const PALACE_NAMES = [
 
 function PalaceGroup({
   label,
+  onPalaceHover,
   onPalaceSelect,
   palaces,
 }: {
   label: string;
+  onPalaceHover?: (palaceName: string | null) => void;
   onPalaceSelect?: (palaceName: string) => void;
   palaces: PalaceBrief[];
 }) {
@@ -67,6 +70,10 @@ function PalaceGroup({
             title={palace.reason}
             type="button"
             onClick={() => onPalaceSelect?.(palace.palaceName)}
+            onBlur={() => onPalaceHover?.(null)}
+            onFocus={() => onPalaceHover?.(palace.palaceName)}
+            onMouseEnter={() => onPalaceHover?.(palace.palaceName)}
+            onMouseLeave={() => onPalaceHover?.(null)}
           >
             {palace.palaceName}
             <small>{palace.score}</small>
@@ -85,9 +92,11 @@ function findPalaceName(text: string): string | undefined {
 
 function EvidenceItem({
   evidence,
+  onPalaceHover,
   onPalaceSelect,
 }: {
   evidence: string;
+  onPalaceHover?: (palaceName: string | null) => void;
   onPalaceSelect?: (palaceName: string) => void;
 }) {
   const palaceName = findPalaceName(evidence);
@@ -99,6 +108,10 @@ function EvidenceItem({
           className="evidence-chip"
           type="button"
           onClick={() => onPalaceSelect?.(palaceName)}
+          onBlur={() => onPalaceHover?.(null)}
+          onFocus={() => onPalaceHover?.(palaceName)}
+          onMouseEnter={() => onPalaceHover?.(palaceName)}
+          onMouseLeave={() => onPalaceHover?.(null)}
         >
           {palaceName}
         </button>
@@ -109,9 +122,11 @@ function EvidenceItem({
 }
 
 function InterpretationContent({
+  onPalaceHover,
   onPalaceSelect,
   section,
 }: {
+  onPalaceHover?: (palaceName: string | null) => void;
   onPalaceSelect?: (palaceName: string) => void;
   section: InterpretationSection;
 }) {
@@ -129,6 +144,7 @@ function InterpretationContent({
             <EvidenceItem
               evidence={evidence}
               key={evidence}
+              onPalaceHover={onPalaceHover}
               onPalaceSelect={onPalaceSelect}
             />
           ))}
@@ -150,9 +166,11 @@ function InterpretationContent({
 function InterpretationCard({
   section,
   sectionKey,
+  onPalaceHover,
   onPalaceSelect,
   variant,
 }: {
+  onPalaceHover?: (palaceName: string | null) => void;
   onPalaceSelect?: (palaceName: string) => void;
   section: InterpretationSection;
   sectionKey: SectionKey;
@@ -164,7 +182,11 @@ function InterpretationCard({
     return (
       <details className="interpretation-card interpretation-accordion" open={defaultOpen}>
         <summary>{section.title}</summary>
-        <InterpretationContent onPalaceSelect={onPalaceSelect} section={section} />
+        <InterpretationContent
+          onPalaceHover={onPalaceHover}
+          onPalaceSelect={onPalaceSelect}
+          section={section}
+        />
       </details>
     );
   }
@@ -172,13 +194,18 @@ function InterpretationCard({
   return (
     <article className="interpretation-card">
       <h3>{section.title}</h3>
-      <InterpretationContent onPalaceSelect={onPalaceSelect} section={section} />
+      <InterpretationContent
+        onPalaceHover={onPalaceHover}
+        onPalaceSelect={onPalaceSelect}
+        section={section}
+      />
     </article>
   );
 }
 
 export function InterpretationPanel({
   astrolabe,
+  onPalaceHover,
   onPalaceSelect,
   transitContext,
   targetDate,
@@ -217,11 +244,13 @@ export function InterpretationPanel({
       <div className="interpretation-palaces" aria-label="重点宫位">
         <PalaceGroup
           label="主线宫位"
+          onPalaceHover={onPalaceHover}
           onPalaceSelect={onPalaceSelect}
           palaces={result.primaryPalaces}
         />
         <PalaceGroup
           label="辅助宫位"
+          onPalaceHover={onPalaceHover}
           onPalaceSelect={onPalaceSelect}
           palaces={result.secondaryPalaces}
         />
@@ -231,6 +260,7 @@ export function InterpretationPanel({
         {SECTION_LABELS.map(({ key, title }) => (
           <InterpretationCard
             key={key}
+            onPalaceHover={onPalaceHover}
             onPalaceSelect={onPalaceSelect}
             sectionKey={key}
             variant={variant}

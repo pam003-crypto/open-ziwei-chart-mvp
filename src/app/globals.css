@@ -2544,6 +2544,14 @@ body {
   box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.36) !important;
 }
 
+.chart-canvas.clickable-palace-mode .iztro-palace.interpretation-preview-palace {
+  border-color: var(--accent) !important;
+  background: #d8f3ea !important;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(47, 191, 155, 0.72),
+    0 0 0 3px rgba(47, 191, 155, 0.13) !important;
+}
+
 .chart-canvas .iztro-star-major,
 .chart-canvas .iztro-star-lucun,
 .chart-canvas .iztro-palace-name,

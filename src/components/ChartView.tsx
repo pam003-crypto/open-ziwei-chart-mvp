@@ -29,6 +29,12 @@ import { CurrentContextBar } from "./mobile/CurrentContextBar";
 import { MobileChartLayout } from "./mobile/MobileChartLayout";
 import { MobileTimeNavigator } from "./mobile/MobileTimeNavigator";
 import { MobileTopBar } from "./mobile/MobileTopBar";
+import {
+  buildPalaceViewModel,
+  getHoroscope,
+  type PalaceViewModel,
+} from "./mobile/palaceViewModel";
+import { PalaceZoomModal } from "./mobile/PalaceZoomModal";
 import { hapticLight } from "@/lib/haptics";
 import type { BirthInfo } from "@/types/birth";
 import type { TransitContext } from "@/types/interpretation";
@@ -219,6 +225,7 @@ function syncClickablePalaces(
   selectedPalaceIndex: number | null,
   astrolabe?: AstrolabeResult,
   enableTooltip = false,
+  previewPalaceIndex: number | null = null,
 ): void {
   const oppositeIndex =
     selectedPalaceIndex === null ? null : normalizePalaceIndex(selectedPalaceIndex + 6);
@@ -269,6 +276,7 @@ function syncClickablePalaces(
     CLICK_PALACE_CLASSES.forEach((className) => {
       palace.classList.toggle(className, selectedClasses.has(className));
     });
+    palace.classList.toggle("interpretation-preview-palace", palaceIndex === previewPalaceIndex);
   });
 }
 
@@ -285,6 +293,8 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   const chartCanvasRef = useRef<HTMLDivElement>(null);
   const [selectedPalaceIndex, setSelectedPalaceIndex] = useState<number | null>(null);
   const [hoveredPalaceIndex, setHoveredPalaceIndex] = useState<number | null>(null);
+  const [previewPalaceIndex, setPreviewPalaceIndex] = useState<number | null>(null);
+  const [zoomPalace, setZoomPalace] = useState<PalaceViewModel | null>(null);
   const [chartMode, setChartMode] = useState<ChartDisplayMode>("simple");
   const [isMobileLayout, setIsMobileLayout] = useState(false);
   const [transitDate, setTransitDate] = useState<Date>(() => new Date());
@@ -326,6 +336,8 @@ export function ChartView({ birthInfo }: ChartViewProps) {
   useEffect(() => {
     setSelectedPalaceIndex(null);
     setHoveredPalaceIndex(null);
+    setPreviewPalaceIndex(null);
+    setZoomPalace(null);
 
     if (chartState.ok) {
       setTransitDate(new Date());
@@ -353,6 +365,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       selectedPalaceIndex,
       chartState.ok ? chartState.astrolabe : undefined,
       chartMode === "simple",
+      previewPalaceIndex,
     );
 
     const observer = new MutationObserver(() => {
@@ -361,6 +374,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
         selectedPalaceIndex,
         chartState.ok ? chartState.astrolabe : undefined,
         chartMode === "simple",
+        previewPalaceIndex,
       );
     });
 
@@ -374,7 +388,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
     return () => {
       observer.disconnect();
     };
-  }, [selectedPalaceIndex, chartState, chartMode]);
+  }, [selectedPalaceIndex, previewPalaceIndex, chartState, chartMode]);
 
   const toggleSelectedPalace = useCallback((palace: HTMLElement) => {
     const palaceIndex = getPalaceIndex(palace);
@@ -404,6 +418,36 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       }
     },
     [toggleSelectedPalace],
+  );
+
+  const handleChartDoubleClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      const root = chartCanvasRef.current;
+
+      if (!root || !chartState.ok) {
+        return;
+      }
+
+      const palaceElement = getTargetPalace(event.target, root);
+      const palaceIndex = palaceElement ? getPalaceIndex(palaceElement) : null;
+      const palace = getPalaceByIndex(chartState.astrolabe, palaceIndex);
+
+      if (!palace) {
+        return;
+      }
+
+      event.preventDefault();
+      hapticLight();
+      setSelectedPalaceIndex(palace.index);
+      setZoomPalace(
+        buildPalaceViewModel(
+          palace,
+          getHoroscope(chartState.astrolabe, transitDate, transitHour),
+          transitContext,
+        ),
+      );
+    },
+    [chartState, transitContext, transitDate, transitHour],
   );
 
   const handleChartMouseOver = useCallback((event: MouseEvent<HTMLDivElement>) => {
@@ -500,6 +544,20 @@ export function ChartView({ birthInfo }: ChartViewProps) {
     });
   }, [chartState]);
 
+  const handleInterpretationPalaceHover = useCallback((palaceName: string | null) => {
+    if (!chartState.ok || !palaceName) {
+      setPreviewPalaceIndex(null);
+      return;
+    }
+
+    const normalizedName = palaceName.replace("宫", "");
+    const palace = chartState.astrolabe.palaces.find(
+      (item) => item.name.replace("宫", "") === normalizedName,
+    );
+
+    setPreviewPalaceIndex(palace?.index ?? null);
+  }, [chartState]);
+
   if (!birthInfo) {
     return (
       <section className="chart-shell flex min-h-[360px] items-center justify-center text-center">
@@ -536,6 +594,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
       className={`chart-canvas clickable-palace-mode chart-mode-${chartMode} ${className}`}
       onClick={handleChartClick}
       onBlur={handleChartBlur}
+      onDoubleClick={handleChartDoubleClick}
       onFocus={handleChartFocus}
       onKeyDown={handleChartKeyDown}
       onMouseLeave={handleChartMouseLeave}
@@ -591,6 +650,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
           <InterpretationPanel
             astrolabe={astrolabe}
+            onPalaceHover={handleInterpretationPalaceHover}
             onPalaceSelect={handleInterpretationPalaceSelect}
             selectedPalaceId={selectedPalaceIndex}
             targetDate={transitDate}
@@ -726,6 +786,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
           <InterpretationPanel
             astrolabe={astrolabe}
+            onPalaceHover={handleInterpretationPalaceHover}
             onPalaceSelect={handleInterpretationPalaceSelect}
             transitContext={transitContext}
             targetDate={transitDate}
@@ -734,6 +795,12 @@ export function ChartView({ birthInfo }: ChartViewProps) {
           />
         </aside>
       </div>
+
+      <PalaceZoomModal
+        open={zoomPalace !== null}
+        palace={zoomPalace}
+        onClose={() => setZoomPalace(null)}
+      />
     </section>
   );
 }

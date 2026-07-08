@@ -46,7 +46,7 @@ const SECTION_LABELS: Array<{ key: AISignalDomain; label: string }> = [
 const CONNECTION_OPTIONS: Array<{ value: AIConnectionMode; label: string }> = [
   { value: "server", label: "服务端默认" },
   { value: "custom", label: "自定义代理" },
-  { value: "browser", label: "浏览器本地 Key" },
+  { value: "browser", label: "自定义 API" },
 ];
 
 function getErrorMessage(error: unknown): string {
@@ -292,7 +292,7 @@ export function AIInterpretPanel({
               </label>
 
               <p className="ai-settings-warning ai-settings-wide">
-                Base URL 默认使用 OpenAI 官方地址，也可以填写兼容 Responses API 的代理地址；系统会自动调用 /responses。浏览器本地 Key 适合个人预览，公开网站不建议这样使用。
+                用户可自行填写 Base URL、模型和 API Key。Base URL 默认使用 OpenAI 官方地址，也可以填写兼容 Responses API 的代理地址；系统会自动调用 /responses。此模式适合个人预览，公开网站不建议长期保存 API Key。
               </p>
             </>
           ) : null}

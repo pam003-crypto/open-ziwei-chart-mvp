@@ -1,11 +1,9 @@
 import { AI_INTERPRET_SYSTEM_PROMPT, getAIStylePrompt } from "./prompts";
-import type { AIInterpretRequest, AIInterpretResponse } from "./types";
+import type { AIEndpointType, AIInterpretRequest, AIInterpretResponse } from "./types";
 
 export const DEFAULT_OPENAI_MODEL = "gpt-5.5-mini";
 
 export const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1";
-
-export const OPENAI_RESPONSES_URL = `${DEFAULT_OPENAI_BASE_URL}/responses`;
 
 const FORBIDDEN_REPLACEMENTS: Array<[RegExp, string]> = [
   [/必定/g, "倾向于"],
@@ -68,6 +66,17 @@ export type OpenAIResponsePayload = {
   };
 };
 
+export type OpenAIChatCompletionPayload = {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
+  error?: {
+    message?: string;
+  };
+};
+
 function getResponseText(payload: OpenAIResponsePayload): string {
   if (payload.output_text) {
     return payload.output_text;
@@ -80,6 +89,10 @@ function getResponseText(payload: OpenAIResponsePayload): string {
       .filter(Boolean)
       .join("\n") ?? ""
   );
+}
+
+function getChatCompletionText(payload: OpenAIChatCompletionPayload): string {
+  return payload.choices?.[0]?.message?.content?.trim() ?? "";
 }
 
 function sanitizeText(text: string): string {
@@ -106,12 +119,47 @@ function sanitizeResponse(response: AIInterpretResponse): AIInterpretResponse {
   };
 }
 
-function buildUserPrompt(request: AIInterpretRequest): string {
+export function buildProviderEndpoint(baseUrl: string, endpointType: AIEndpointType): string {
+  const normalizedBaseUrl = (baseUrl || DEFAULT_OPENAI_BASE_URL).trim().replace(/\/+$/, "");
+
+  if (endpointType === "responses") {
+    return normalizedBaseUrl.endsWith("/responses")
+      ? normalizedBaseUrl
+      : `${normalizedBaseUrl}/responses`;
+  }
+
+  return normalizedBaseUrl.endsWith("/chat/completions")
+    ? normalizedBaseUrl
+    : `${normalizedBaseUrl}/chat/completions`;
+}
+
+function buildPlainTextFallback(text: string, fallbackTitle: string): AIInterpretResponse {
+  const cleanText = sanitizeText(text).slice(0, 1800);
+  const summary = cleanText.slice(0, 420) || "模型未返回标准 JSON，暂时只能显示原始文本。";
+
+  return sanitizeResponse({
+    title: fallbackTitle,
+    summary,
+    sections: {
+      overview: cleanText,
+      career: "模型未返回标准 JSON，本栏目暂无法结构化拆分。请尝试更换模型、接口类型，或重新生成。",
+      wealth: "模型未返回标准 JSON，本栏目暂无法结构化拆分。请尝试更换模型、接口类型，或重新生成。",
+      relationship: "模型未返回标准 JSON，本栏目暂无法结构化拆分。请尝试更换模型、接口类型，或重新生成。",
+      health: "模型未返回标准 JSON，本栏目暂无法结构化拆分。请尝试更换模型、接口类型，或重新生成。",
+      risk: "模型未返回标准 JSON，风险提示仅能参考原始文本，不宜作确定性判断。",
+      advice: "建议切换 Responses / Chat Completions 接口类型，或使用更稳定支持 JSON 输出的模型。",
+    },
+    disclaimer: "模型未返回标准 JSON，以上为原始文本兜底展示，仅供学习参考。",
+  });
+}
+
+export function buildUserPrompt(request: AIInterpretRequest): string {
   return [
     getAIStylePrompt(request.style ?? "professional"),
     "请只基于下面 JSON 中的本地规则结果生成解读，不得补充 JSON 中不存在的星曜、四化、宫位或时间。",
     "每个栏目请写成自然段，但内容必须包含“依据、结论、建议”的逻辑。",
     "如果某栏目线索不足，请直接说明线索不集中，并给低风险建议。",
+    "请返回符合 JSON schema 的 JSON 字符串，不要使用 Markdown 代码块。",
     JSON.stringify(request),
   ].join("\n\n");
 }
@@ -141,18 +189,59 @@ export function buildOpenAIResponseBody(request: AIInterpretRequest, model: stri
   };
 }
 
-export function parseOpenAIResponsePayload(payload: OpenAIResponsePayload): AIInterpretResponse {
-  const text = getResponseText(payload);
+export function buildOpenAIChatCompletionBody(request: AIInterpretRequest, model: string) {
+  return {
+    model,
+    messages: [
+      {
+        role: "system",
+        content: AI_INTERPRET_SYSTEM_PROMPT,
+      },
+      {
+        role: "user",
+        content: buildUserPrompt(request),
+      },
+    ],
+  };
+}
 
+export function parseAIResponseText(text: string, fallbackTitle = "AI 解读"): AIInterpretResponse {
   if (!text) {
     throw new Error("AI 返回内容为空");
   }
 
-  const parsed = JSON.parse(text) as AIInterpretResponse;
+  const normalizedText = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "");
 
-  if (!parsed.title || !parsed.summary || !parsed.sections || !parsed.disclaimer) {
-    throw new Error("AI 返回格式不完整");
+  try {
+    const parsed = JSON.parse(normalizedText) as AIInterpretResponse;
+
+    if (!parsed.title || !parsed.summary || !parsed.sections || !parsed.disclaimer) {
+      throw new Error("AI 返回格式不完整");
+    }
+
+    return sanitizeResponse(parsed);
+  } catch {
+    return buildPlainTextFallback(normalizedText, fallbackTitle);
   }
+}
 
-  return sanitizeResponse(parsed);
+export function parseOpenAIResponsePayload(
+  payload: OpenAIResponsePayload,
+  fallbackTitle = "AI 解读",
+): AIInterpretResponse {
+  const text = getResponseText(payload);
+
+  return parseAIResponseText(text, fallbackTitle);
+}
+
+export function parseOpenAIChatCompletionPayload(
+  payload: OpenAIChatCompletionPayload,
+  fallbackTitle = "AI 解读",
+): AIInterpretResponse {
+  const text = getChatCompletionText(payload);
+
+  return parseAIResponseText(text, fallbackTitle);
 }

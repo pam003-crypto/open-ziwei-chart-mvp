@@ -2,6 +2,44 @@ export type AIInterpretScope = "natal" | "decade" | "year" | "month" | "day" | "
 
 export type AIInterpretStyle = "professional" | "gentle" | "direct" | "classical";
 
+export type AIEndpointType = "responses" | "chat_completions";
+
+export type AIProviderConfig = {
+  mode: "pure_api";
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+  endpointType: AIEndpointType;
+};
+
+export type AIProviderErrorType =
+  | "network"
+  | "unauthorized"
+  | "not_found"
+  | "model_error"
+  | "provider_error"
+  | "timeout"
+  | "unknown";
+
+export type AIProviderErrorResponse = {
+  ok: false;
+  errorType: AIProviderErrorType;
+  message: string;
+  status?: number;
+  endpoint?: string;
+  endpointType?: AIEndpointType;
+  detail?: string;
+};
+
+export type AITestConnectionResponse =
+  | {
+      ok: true;
+      message: string;
+      endpoint: string;
+      endpointType: AIEndpointType;
+    }
+  | AIProviderErrorResponse;
+
 export type AISignalDomain =
   | "overview"
   | "career"

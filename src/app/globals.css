@@ -3174,6 +3174,27 @@ body {
   font-weight: 800;
 }
 
+.ai-connection-message {
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+  border-radius: var(--radius-card);
+  font-size: 12px;
+  line-height: 1.65;
+  padding: 10px 12px;
+}
+
+.ai-connection-message.is-success {
+  border: 1px solid rgba(73, 208, 165, 0.24);
+  background: rgba(73, 208, 165, 0.08);
+  color: #d7f8ea;
+}
+
+.ai-connection-message.is-error {
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  background: rgba(239, 68, 68, 0.08);
+  color: #fecaca;
+}
+
 .ai-primary-button,
 .ai-secondary-button {
   min-height: 38px;

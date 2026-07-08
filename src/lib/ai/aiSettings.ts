@@ -1,4 +1,5 @@
 import { DEFAULT_OPENAI_BASE_URL, DEFAULT_OPENAI_MODEL } from "./openaiPayload";
+import type { AIEndpointType } from "./types";
 
 const SETTINGS_KEY = "open-ziwei-chart-mvp:ai-settings:v1";
 const SESSION_KEY = "open-ziwei-chart-mvp:ai-key:session:v1";
@@ -11,6 +12,7 @@ export type AISettings = {
   endpoint: string;
   baseUrl: string;
   model: string;
+  endpointType: AIEndpointType;
   rememberKey: boolean;
   apiKey?: string;
 };
@@ -20,11 +22,18 @@ export const DEFAULT_AI_SETTINGS: AISettings = {
   endpoint: "api/ai-interpret",
   baseUrl: DEFAULT_OPENAI_BASE_URL,
   model: DEFAULT_OPENAI_MODEL,
+  endpointType: "chat_completions",
   rememberKey: false,
   apiKey: "",
 };
 
 type StoredAISettings = Omit<AISettings, "apiKey">;
+
+function getEndpointType(value: unknown): AIEndpointType {
+  return value === "responses" || value === "chat_completions"
+    ? value
+    : DEFAULT_AI_SETTINGS.endpointType;
+}
 
 function getStorageItem(storage: Storage, key: string): string {
   try {
@@ -55,6 +64,7 @@ export function loadAISettings(): AISettings {
       endpoint: stored.endpoint || DEFAULT_AI_SETTINGS.endpoint,
       baseUrl: stored.baseUrl || DEFAULT_AI_SETTINGS.baseUrl,
       model: stored.model || DEFAULT_AI_SETTINGS.model,
+      endpointType: getEndpointType(stored.endpointType),
     };
   } catch {
     return DEFAULT_AI_SETTINGS;

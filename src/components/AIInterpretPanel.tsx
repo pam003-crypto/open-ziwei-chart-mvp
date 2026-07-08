@@ -13,7 +13,7 @@ import {
   type AIConnectionMode,
   type AISettings,
 } from "@/lib/ai/aiSettings";
-import { requestAIInterpret } from "@/lib/ai/requestAIInterpret";
+import { requestAIInterpret, testAIConnection } from "@/lib/ai/requestAIInterpret";
 import type {
   AIInterpretRequest,
   AIInterpretResponse,
@@ -102,6 +102,10 @@ export function AIInterpretPanel({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<
+    "idle" | "testing" | "success" | "error"
+  >("idle");
+  const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
   const styledRequest = useMemo<AIInterpretRequest>(
     () => ({
       ...request,
@@ -130,6 +134,17 @@ export function AIInterpretPanel({
     setCachedAt(null);
   }, [styledRequest]);
 
+  useEffect(() => {
+    setConnectionStatus("idle");
+    setConnectionMessage(null);
+  }, [
+    settings.mode,
+    settings.baseUrl,
+    settings.apiKey,
+    settings.model,
+    settings.endpointType,
+  ]);
+
   const updateSettings = (nextSettings: Partial<AISettings>) => {
     setSettingsSaved(false);
     setSettings((current) => ({
@@ -148,7 +163,30 @@ export function AIInterpretPanel({
     setSettingsSaved(false);
   };
 
+  const requiresConnectionTest = settings.mode === "browser";
+
+  const runConnectionTest = async () => {
+    setConnectionStatus("testing");
+    setConnectionMessage(null);
+    setError(null);
+
+    try {
+      const result = await testAIConnection(settings);
+
+      setConnectionStatus("success");
+      setConnectionMessage(`${result.message}：${result.endpoint}`);
+    } catch (testError) {
+      setConnectionStatus("error");
+      setConnectionMessage(getErrorMessage(testError));
+    }
+  };
+
   const generateInterpretation = async (force = false) => {
+    if (requiresConnectionTest && connectionStatus !== "success") {
+      setError("纯 API 模式需要先点击“测试连接”，连接成功后再生成 AI 解读。");
+      return;
+    }
+
     const cached = force ? null : getAIInterpretCache(styledRequest);
 
     if (cached) {
@@ -261,6 +299,21 @@ export function AIInterpretPanel({
                 />
               </label>
 
+              <label className="ai-settings-wide">
+                <span>接口类型</span>
+                <select
+                  value={settings.endpointType}
+                  onChange={(event) =>
+                    updateSettings({
+                      endpointType: event.target.value as AISettings["endpointType"],
+                    })
+                  }
+                >
+                  <option value="chat_completions">Chat Completions API</option>
+                  <option value="responses">Responses API</option>
+                </select>
+              </label>
+
               <details className="ai-more-options ai-settings-wide" open>
                 <summary>更多选项</summary>
                 <div className="ai-more-options-grid">
@@ -295,7 +348,7 @@ export function AIInterpretPanel({
                   </label>
 
                   <p className="ai-settings-warning">
-                    纯 API 模式由用户自行填写模型、Base URL 和 Key。Base URL 支持 OpenAI 官方或兼容 Responses API 的代理地址，系统会自动调用 /responses。
+                    纯 API 模式由本项目服务端转发，不在浏览器直接请求外部 Base URL。若代理不支持当前接口路径，请切换 Responses API / Chat Completions API 后测试。
                   </p>
                 </div>
               </details>
@@ -304,6 +357,16 @@ export function AIInterpretPanel({
         </div>
 
         <div className="ai-settings-actions">
+          {settings.mode === "browser" ? (
+            <button
+              className="ai-secondary-button"
+              disabled={connectionStatus === "testing"}
+              type="button"
+              onClick={runConnectionTest}
+            >
+              {connectionStatus === "testing" ? "测试中..." : "测试连接"}
+            </button>
+          ) : null}
           <button className="ai-secondary-button" type="button" onClick={saveSettings}>
             保存设置
           </button>
@@ -312,20 +375,32 @@ export function AIInterpretPanel({
           </button>
           {settingsSaved ? <span>已保存</span> : null}
         </div>
+
+        {connectionMessage ? (
+          <p className={`ai-connection-message is-${connectionStatus}`}>
+            {connectionMessage}
+          </p>
+        ) : null}
       </details>
 
       <div className="ai-action-row">
         <button
           className="ai-primary-button"
-          disabled={isLoading}
+          disabled={isLoading || (requiresConnectionTest && connectionStatus !== "success")}
           type="button"
           onClick={() => generateInterpretation(false)}
         >
-          {isLoading ? "生成中..." : response ? "读取 / 生成 AI 解读" : "生成 AI 解读"}
+          {isLoading
+            ? "生成中..."
+            : requiresConnectionTest && connectionStatus !== "success"
+              ? "请先测试连接"
+              : response
+                ? "读取 / 生成 AI 解读"
+                : "生成 AI 解读"}
         </button>
         <button
           className="ai-secondary-button"
-          disabled={isLoading}
+          disabled={isLoading || (requiresConnectionTest && connectionStatus !== "success")}
           type="button"
           onClick={() => generateInterpretation(true)}
         >

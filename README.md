@@ -39,7 +39,7 @@ npm run build
 
 [https://pam003-crypto.github.io/open-ziwei-chart-mvp/](https://pam003-crypto.github.io/open-ziwei-chart-mvp/)
 
-注意：GitHub Pages 是静态托管，不能执行 Next.js API Route。页面提供了“AI 设置”，可切换为代理 API 或纯 API 模式进行预览。纯 API 模式允许用户自行填写 Base URL、模型和 API Key；Base URL 默认 `https://api.openai.com/v1`，系统会自动调用 `/responses`。公开站点不建议在浏览器中长期保存 API Key；更稳妥的方式是部署到 Vercel / Node 服务，并把 Key 放在服务器环境变量里。
+注意：GitHub Pages 是静态托管，不能执行 Next.js API Route。AI 解读的服务端代理接口需要运行在 `npm run dev`、Vercel 或 Node 服务环境。页面提供了“AI 设置”，可切换为代理 API 或纯 API 模式；纯 API 模式允许用户自行填写 Base URL、模型、API Key 和接口类型，并由本项目服务端代理请求外部模型。公开站点不建议在浏览器中长期保存 API Key；更稳妥的方式是部署到 Vercel / Node 服务，并把 Key 放在服务器环境变量里。
 
 ## 当前功能
 
@@ -53,7 +53,7 @@ npm run build
 - JSON 导入导出
 - 本地规则解读
 - 基于本地规则结果的 AI 解读入口
-- 网页端 AI 设置：服务端默认 / 代理 API / 纯 API / Base URL
+- 网页端 AI 设置：服务端默认 / 代理 API / 纯 API / Base URL / 接口类型 / 测试连接
 
 ## 后续计划
 

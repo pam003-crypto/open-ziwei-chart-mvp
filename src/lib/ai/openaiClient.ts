@@ -1,11 +1,10 @@
-import type { AIInterpretRequest, AIInterpretResponse } from "./types";
-import {
-  buildOpenAIResponseBody,
-  DEFAULT_OPENAI_MODEL,
-  OPENAI_RESPONSES_URL,
-  parseOpenAIResponsePayload,
-  type OpenAIResponsePayload,
-} from "./openaiPayload";
+import { DEFAULT_OPENAI_BASE_URL, DEFAULT_OPENAI_MODEL } from "./openaiPayload";
+import { callAIProviderInterpret } from "./providerClient";
+import type { AIEndpointType, AIInterpretRequest, AIInterpretResponse } from "./types";
+
+function getEndpointType(value: string | undefined): AIEndpointType {
+  return value === "chat_completions" ? "chat_completions" : "responses";
+}
 
 export async function callOpenAIInterpret(
   request: AIInterpretRequest,
@@ -16,21 +15,11 @@ export async function callOpenAIInterpret(
     throw new Error("未配置 OPENAI_API_KEY");
   }
 
-  const model = process.env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL;
-  const response = await fetch(OPENAI_RESPONSES_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(buildOpenAIResponseBody(request, model)),
+  return callAIProviderInterpret(request, {
+    mode: "pure_api",
+    baseUrl: process.env.OPENAI_BASE_URL || DEFAULT_OPENAI_BASE_URL,
+    apiKey,
+    model: process.env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL,
+    endpointType: getEndpointType(process.env.OPENAI_ENDPOINT_TYPE),
   });
-
-  const payload = (await response.json()) as OpenAIResponsePayload;
-
-  if (!response.ok) {
-    throw new Error(payload.error?.message || "AI 解读生成失败");
-  }
-
-  return parseOpenAIResponsePayload(payload);
 }

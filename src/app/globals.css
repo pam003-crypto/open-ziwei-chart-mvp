@@ -146,87 +146,148 @@ button:disabled {
   color: #0c0a09;
 }
 
-.chart-workspace {
-  display: grid;
-  gap: 18px;
-}
-
-.chart-main-column,
-.chart-side-column {
-  min-width: 0;
-}
-
-.chart-main-column {
-  display: grid;
-  align-content: start;
-  gap: 18px;
-}
-
 .chart-frame {
   width: 100%;
 }
 
-.chart-side-column {
+.desktop-main-panel {
   display: grid;
-  align-content: start;
   gap: 18px;
+  min-width: 0;
+}
+
+.chart-board-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.chart-board {
+  width: min(100%, 1040px);
+}
+
+.desktop-time-panel {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px 14px;
+}
+
+.current-time-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: rgba(47, 191, 155, 0.08);
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 8px 10px;
+}
+
+.current-time-bar span {
+  color: var(--text-muted);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.current-time-bar strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desktop-time-block {
+  display: grid;
+  gap: 8px;
+}
+
+.desktop-time-row {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+}
+
+.desktop-time-label {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 900;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.desktop-time-options {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+
+.desktop-time-option {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 30px;
+  min-width: 58px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-primary);
+  cursor: pointer;
+  line-height: 1.1;
+  padding: 4px 10px;
+  text-align: center;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.desktop-time-option:hover,
+.desktop-time-option:focus-visible {
+  border-color: rgba(47, 191, 155, 0.45);
+  background: rgba(47, 191, 155, 0.08);
+  outline: none;
+}
+
+.desktop-time-option:active {
+  transform: scale(0.96);
+}
+
+.desktop-time-option.is-active {
+  border-color: transparent;
+  background: linear-gradient(180deg, #65e3bf, #2fbf9b);
+  box-shadow: 0 6px 16px rgba(47, 191, 155, 0.22);
+  color: #07130f;
+  font-weight: 900;
+}
+
+.desktop-time-option .primary {
+  display: block;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.desktop-time-option .secondary {
+  display: block;
+  margin-top: 1px;
+  font-size: 10px;
+  opacity: 0.72;
 }
 
 @media (min-width: 1536px) {
-  .chart-workspace {
-    grid-template-columns: minmax(720px, 1024px) minmax(340px, 420px);
-    align-items: start;
-    justify-content: center;
-  }
-
-  .chart-side-column {
-    position: sticky;
-    top: 16px;
-    max-height: calc(100vh - 32px);
-    overflow: auto;
-    padding-right: 2px;
-  }
-
-  .chart-side-column .transit-row {
-    grid-template-columns: 58px minmax(0, 1fr);
-  }
-
-  .chart-side-column .transit-row-label {
-    font-size: 16px;
-  }
-
-  .chart-side-column .transit-row-cells {
-    grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
-  }
-
-  .chart-side-column .transit-row-cells.is-compact {
-    grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
-  }
-
-  .chart-side-column .transit-cell {
-    min-height: 48px;
-    font-size: 13px;
-    padding: 5px 4px;
-  }
-
-  .chart-side-column .transit-cell small {
-    font-size: 11px;
-  }
-
-  .chart-side-column .interpretation-panel {
-    padding: 16px;
-  }
-
-  .chart-side-column .interpretation-header {
-    display: grid;
-  }
-
-  .chart-side-column .interpretation-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-side-column .interpretation-card:first-child {
-    grid-column: auto;
+  .chart-board {
+    width: min(100%, 1060px);
   }
 }
 

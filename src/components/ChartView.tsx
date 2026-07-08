@@ -20,9 +20,9 @@ import { getCalendarSummary, type CalendarSummary } from "@/lib/calendar";
 import { InterpretationPanel } from "./InterpretationPanel";
 import {
   getFinestSelectedTimeItem,
-  TransitControls,
   type TimeSelection,
 } from "./TransitControls";
+import { DesktopHorizontalTimeNavigator } from "./DesktopHorizontalTimeNavigator";
 import { BirthInfoSummary } from "./mobile/BirthInfoSummary";
 import { CurrentContextBar } from "./mobile/CurrentContextBar";
 import { MobileChartLayout } from "./mobile/MobileChartLayout";
@@ -538,40 +538,37 @@ export function ChartView({ birthInfo }: ChartViewProps) {
         </p>
       ) : null}
 
-      <div className="chart-workspace">
-        <div className="chart-main-column">
-          <div className="chart-frame overflow-hidden rounded-md border border-stone-800 bg-stone-200 p-2 shadow-2xl shadow-black/30 sm:p-3">
-            {renderChartCanvas("mx-auto w-full max-w-[1024px]")}
-          </div>
+      <div className="desktop-main-panel">
+        <DesktopHorizontalTimeNavigator
+          astrolabe={astrolabe}
+          transitDate={transitDate}
+          transitHour={transitHour}
+          activeScope={transitContext.scope}
+          timeSelection={timeSelection}
+          onTransitDateChange={setTransitDate}
+          onTransitHourChange={setTransitHour}
+          onTransitContextChange={setTransitContext}
+          onTimeSelectionChange={setTimeSelection}
+        />
 
+        <div className="chart-board-container">
+          <div className="chart-frame chart-board overflow-hidden rounded-md border border-stone-800 bg-stone-200 p-2 shadow-2xl shadow-black/30 sm:p-3">
+            {renderChartCanvas("mx-auto w-full")}
+          </div>
         </div>
 
-        <aside className="chart-side-column" aria-label="流年设置与解读">
-          <TransitControls
-            astrolabe={astrolabe}
-            transitDate={transitDate}
-            transitHour={transitHour}
-            activeScope={transitContext.scope}
-            timeSelection={timeSelection}
-            onTransitDateChange={setTransitDate}
-            onTransitHourChange={setTransitHour}
-            onTransitContextChange={setTransitContext}
-            onTimeSelectionChange={setTimeSelection}
-          />
-
-          <InterpretationPanel
-            astrolabe={astrolabe}
-            birthInfo={birthInfo}
-            calendar={calendar}
-            onPalaceHover={handleInterpretationPalaceHover}
-            onPalaceSelect={handleInterpretationPalaceSelect}
-            transitContext={transitContext}
-            targetDate={transitDate}
-            timeSelection={timeSelection}
-            transitHour={transitHour}
-            selectedPalaceId={selectedPalaceIndex}
-          />
-        </aside>
+        <InterpretationPanel
+          astrolabe={astrolabe}
+          birthInfo={birthInfo}
+          calendar={calendar}
+          onPalaceHover={handleInterpretationPalaceHover}
+          onPalaceSelect={handleInterpretationPalaceSelect}
+          transitContext={transitContext}
+          targetDate={transitDate}
+          timeSelection={timeSelection}
+          transitHour={transitHour}
+          selectedPalaceId={selectedPalaceIndex}
+        />
       </div>
 
       <PalaceZoomModal

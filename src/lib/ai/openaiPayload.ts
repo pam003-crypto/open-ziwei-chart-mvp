@@ -3,7 +3,9 @@ import type { AIInterpretRequest, AIInterpretResponse } from "./types";
 
 export const DEFAULT_OPENAI_MODEL = "gpt-5.5-mini";
 
-export const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
+export const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1";
+
+export const OPENAI_RESPONSES_URL = `${DEFAULT_OPENAI_BASE_URL}/responses`;
 
 const FORBIDDEN_REPLACEMENTS: Array<[RegExp, string]> = [
   [/必定/g, "倾向于"],

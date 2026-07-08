@@ -1,7 +1,7 @@
 import type { AISettings } from "./aiSettings";
 import {
   buildOpenAIResponseBody,
-  OPENAI_RESPONSES_URL,
+  DEFAULT_OPENAI_BASE_URL,
   parseOpenAIResponsePayload,
   type OpenAIResponsePayload,
 } from "./openaiPayload";
@@ -36,6 +36,15 @@ async function callCompatibleEndpoint(
   return (await response.json()) as AIInterpretResponse;
 }
 
+function buildResponsesUrl(baseUrl: string): string {
+  const normalizedBaseUrl = (baseUrl || DEFAULT_OPENAI_BASE_URL).trim().replace(/\/+$/, "");
+
+  // Browser mode asks for a Base URL, but accepting a full /responses URL makes proxy setup forgiving.
+  return normalizedBaseUrl.endsWith("/responses")
+    ? normalizedBaseUrl
+    : `${normalizedBaseUrl}/responses`;
+}
+
 async function callOpenAIInBrowser(
   request: AIInterpretRequest,
   settings: AISettings,
@@ -46,7 +55,7 @@ async function callOpenAIInBrowser(
     throw new Error("请先在 AI 设置中填写 API Key。");
   }
 
-  const response = await fetch(OPENAI_RESPONSES_URL, {
+  const response = await fetch(buildResponsesUrl(settings.baseUrl), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -57,7 +66,7 @@ async function callOpenAIInBrowser(
   const payload = (await response.json()) as OpenAIResponsePayload;
 
   if (!response.ok) {
-    throw new Error(payload.error?.message || "浏览器直连 OpenAI 失败。");
+    throw new Error(payload.error?.message || "浏览器直连 AI API 失败，请检查 Base URL、API Key 或浏览器网络权限。");
   }
 
   return parseOpenAIResponsePayload(payload);

@@ -1,4 +1,4 @@
-import { DEFAULT_OPENAI_MODEL } from "./openaiPayload";
+import { DEFAULT_OPENAI_BASE_URL, DEFAULT_OPENAI_MODEL } from "./openaiPayload";
 
 const SETTINGS_KEY = "open-ziwei-chart-mvp:ai-settings:v1";
 const SESSION_KEY = "open-ziwei-chart-mvp:ai-key:session:v1";
@@ -9,6 +9,7 @@ export type AIConnectionMode = "server" | "custom" | "browser";
 export type AISettings = {
   mode: AIConnectionMode;
   endpoint: string;
+  baseUrl: string;
   model: string;
   rememberKey: boolean;
   apiKey?: string;
@@ -17,6 +18,7 @@ export type AISettings = {
 export const DEFAULT_AI_SETTINGS: AISettings = {
   mode: "server",
   endpoint: "api/ai-interpret",
+  baseUrl: DEFAULT_OPENAI_BASE_URL,
   model: DEFAULT_OPENAI_MODEL,
   rememberKey: false,
   apiKey: "",
@@ -51,6 +53,7 @@ export function loadAISettings(): AISettings {
       rememberKey,
       apiKey,
       endpoint: stored.endpoint || DEFAULT_AI_SETTINGS.endpoint,
+      baseUrl: stored.baseUrl || DEFAULT_AI_SETTINGS.baseUrl,
       model: stored.model || DEFAULT_AI_SETTINGS.model,
     };
   } catch {

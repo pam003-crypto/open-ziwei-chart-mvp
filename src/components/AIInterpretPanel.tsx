@@ -251,6 +251,16 @@ export function AIInterpretPanel({
 
           {settings.mode === "browser" ? (
             <>
+              <label className="ai-settings-wide">
+                <span>Base URL</span>
+                <input
+                  value={settings.baseUrl}
+                  onChange={(event) => updateSettings({ baseUrl: event.target.value })}
+                  placeholder="https://api.openai.com/v1"
+                  type="url"
+                />
+              </label>
+
               <label>
                 <span>模型</span>
                 <input
@@ -282,7 +292,7 @@ export function AIInterpretPanel({
               </label>
 
               <p className="ai-settings-warning ai-settings-wide">
-                浏览器本地 Key 适合个人预览；公开网站不建议这样使用。更稳妥的方式是部署服务端代理，把 Key 放在服务器环境变量里。
+                Base URL 默认使用 OpenAI 官方地址，也可以填写兼容 Responses API 的代理地址；系统会自动调用 /responses。浏览器本地 Key 适合个人预览，公开网站不建议这样使用。
               </p>
             </>
           ) : null}

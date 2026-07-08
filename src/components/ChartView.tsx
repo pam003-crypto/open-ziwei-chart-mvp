@@ -81,7 +81,6 @@ type PalaceTooltipViewModel = {
     label: string;
     value: string;
   }>;
-  debugLines: string[];
 };
 
 const CLICK_PALACE_CLASSES = [
@@ -189,28 +188,7 @@ function getPalaceTooltip(palace: Palace): PalaceTooltipViewModel {
           .join("、") || "无",
       },
     ],
-    debugLines: getDebugPalaceSummary(palace),
   };
-}
-
-function getDebugPalaceSummary(palace: Palace): string[] {
-  return [
-    `index: ${palace.index}`,
-    `name: ${palace.name}`,
-    `stemBranch: ${palace.heavenlyStem}${palace.earthlyBranch}`,
-    `isOriginalPalace: ${String(palace.isOriginalPalace)}`,
-    `isBodyPalace: ${String(palace.isBodyPalace)}`,
-    `majorStars: ${formatStars(palace.majorStars)}`,
-    `minorStars: ${formatStars(palace.minorStars)}`,
-    `adjectiveStars: ${formatStars(palace.adjectiveStars)}`,
-    `changsheng12: ${palace.changsheng12 || ""}`,
-    `boshi12: ${palace.boshi12 || ""}`,
-    `jiangqian12: ${palace.jiangqian12 || ""}`,
-    `suiqian12: ${palace.suiqian12 || ""}`,
-    `decadal: ${palace.decadal.range.join(" - ")} ${palace.decadal.heavenlyStem}${palace.decadal.earthlyBranch}`,
-    `ages: ${palace.ages.join(", ")}`,
-    "simple rule: majorStars + mutagen + decadal + palace name + heavenlyStem/earthlyBranch",
-  ];
 }
 
 function getTooltipText(tooltip: PalaceTooltipViewModel): string {
@@ -749,29 +727,6 @@ export function ChartView({ birthInfo }: ChartViewProps) {
             </section>
           ) : null}
 
-          {chartMode === "debug" ? (
-            <section className="chart-debug-panel">
-              <div>
-                <p className="section-kicker">Debug</p>
-                <h3>宫位原始字段与显示规则</h3>
-                <p>
-                  simple: majorStars + mutagen + decadal + palace name +
-                  heavenlyStem/earthlyBranch
-                </p>
-              </div>
-              <div className="chart-debug-grid">
-                {astrolabe.palaces.map((palace) => (
-                  <article key={palace.index}>
-                    <h4>
-                      {palace.index}. {palace.name} {palace.heavenlyStem}
-                      {palace.earthlyBranch}
-                    </h4>
-                    <pre>{getDebugPalaceSummary(palace).join("\n")}</pre>
-                  </article>
-                ))}
-              </div>
-            </section>
-          ) : null}
         </div>
 
         <aside className="chart-side-column" aria-label="流年设置与解读">

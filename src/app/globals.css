@@ -3094,6 +3094,41 @@ body {
   grid-column: 1 / -1;
 }
 
+.ai-more-options {
+  display: grid;
+  gap: 10px;
+}
+
+.ai-more-options > summary {
+  width: max-content;
+  cursor: pointer;
+  border: 1px solid var(--line-panel);
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.065);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 900;
+  list-style: none;
+  padding: 8px 14px;
+  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.ai-more-options > summary:hover,
+.ai-more-options > summary:focus-visible {
+  border-color: rgba(73, 208, 165, 0.36);
+  background: rgba(73, 208, 165, 0.08);
+  outline: none;
+}
+
+.ai-more-options > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ai-more-options-grid {
+  display: grid;
+  gap: 12px;
+}
+
 .ai-settings-checkbox {
   display: flex !important;
   grid-template-columns: auto 1fr;

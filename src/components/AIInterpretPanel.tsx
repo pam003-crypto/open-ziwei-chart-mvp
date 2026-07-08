@@ -45,8 +45,8 @@ const SECTION_LABELS: Array<{ key: AISignalDomain; label: string }> = [
 
 const CONNECTION_OPTIONS: Array<{ value: AIConnectionMode; label: string }> = [
   { value: "server", label: "服务端默认" },
-  { value: "custom", label: "自定义代理" },
-  { value: "browser", label: "自定义 API" },
+  { value: "custom", label: "代理 API" },
+  { value: "browser", label: "纯 API" },
 ];
 
 function getErrorMessage(error: unknown): string {
@@ -215,8 +215,8 @@ export function AIInterpretPanel({
         <summary>AI 设置</summary>
 
         <div className="ai-settings-grid">
-          <label>
-            <span>连接方式</span>
+          <label className="ai-settings-wide">
+            <span>接入模式</span>
             <select
               value={settings.mode}
               onChange={(event) =>
@@ -252,17 +252,7 @@ export function AIInterpretPanel({
           {settings.mode === "browser" ? (
             <>
               <label className="ai-settings-wide">
-                <span>Base URL</span>
-                <input
-                  value={settings.baseUrl}
-                  onChange={(event) => updateSettings({ baseUrl: event.target.value })}
-                  placeholder="https://api.openai.com/v1"
-                  type="url"
-                />
-              </label>
-
-              <label>
-                <span>模型</span>
+                <span>配置模型</span>
                 <input
                   value={settings.model}
                   onChange={(event) => updateSettings({ model: event.target.value })}
@@ -271,29 +261,44 @@ export function AIInterpretPanel({
                 />
               </label>
 
-              <label className="ai-settings-wide">
-                <span>API Key</span>
-                <input
-                  autoComplete="off"
-                  value={settings.apiKey ?? ""}
-                  onChange={(event) => updateSettings({ apiKey: event.target.value })}
-                  placeholder="sk-..."
-                  type="password"
-                />
-              </label>
+              <details className="ai-more-options ai-settings-wide" open>
+                <summary>更多选项</summary>
+                <div className="ai-more-options-grid">
+                  <label>
+                    <span>Base URL</span>
+                    <input
+                      value={settings.baseUrl}
+                      onChange={(event) => updateSettings({ baseUrl: event.target.value })}
+                      placeholder="https://api.openai.com/v1"
+                      type="url"
+                    />
+                  </label>
 
-              <label className="ai-settings-checkbox ai-settings-wide">
-                <input
-                  checked={settings.rememberKey}
-                  onChange={(event) => updateSettings({ rememberKey: event.target.checked })}
-                  type="checkbox"
-                />
-                <span>记住到此浏览器。仅建议个人设备使用。</span>
-              </label>
+                  <label>
+                    <span>Key</span>
+                    <input
+                      autoComplete="off"
+                      value={settings.apiKey ?? ""}
+                      onChange={(event) => updateSettings({ apiKey: event.target.value })}
+                      placeholder="sk-..."
+                      type="password"
+                    />
+                  </label>
 
-              <p className="ai-settings-warning ai-settings-wide">
-                用户可自行填写 Base URL、模型和 API Key。Base URL 默认使用 OpenAI 官方地址，也可以填写兼容 Responses API 的代理地址；系统会自动调用 /responses。此模式适合个人预览，公开网站不建议长期保存 API Key。
-              </p>
+                  <label className="ai-settings-checkbox">
+                    <input
+                      checked={settings.rememberKey}
+                      onChange={(event) => updateSettings({ rememberKey: event.target.checked })}
+                      type="checkbox"
+                    />
+                    <span>记住到此浏览器。仅建议个人设备使用。</span>
+                  </label>
+
+                  <p className="ai-settings-warning">
+                    纯 API 模式由用户自行填写模型、Base URL 和 Key。Base URL 支持 OpenAI 官方或兼容 Responses API 的代理地址，系统会自动调用 /responses。
+                  </p>
+                </div>
+              </details>
             </>
           ) : null}
         </div>

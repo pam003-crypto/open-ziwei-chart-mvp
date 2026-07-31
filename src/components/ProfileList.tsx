@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import paperArtwork from "../../public/assets/paper-bamboo-mountain.webp";
 import {
   deleteProfile,
   exportProfilesJson,
@@ -96,10 +98,21 @@ export function ProfileList({
   }
 
   return (
-    <section className="tool-panel space-y-5">
-      <div>
+    <section className="tool-panel profile-panel">
+      <Image
+        alt=""
+        aria-hidden="true"
+        className="profile-paper-art"
+        fill
+        sizes="300px"
+        src={paperArtwork}
+      />
+      <div className="panel-heading">
+        <span className="panel-heading-mark" aria-hidden="true" />
+        <div>
         <p className="section-kicker">Profiles</p>
         <h2 className="section-title">命例管理</h2>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -131,36 +144,32 @@ export function ProfileList({
       </div>
 
       {message ? (
-        <p className="profile-message rounded-md border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-100">
+        <p className="profile-message">
           {message}
         </p>
       ) : null}
 
       <div className="space-y-3">
         {profiles.length === 0 ? (
-          <p className="profile-empty rounded-md border border-dashed border-stone-700 px-4 py-6 text-center text-sm text-stone-400">
+          <p className="profile-empty">
             暂无保存命例
           </p>
         ) : (
           profiles.map((profile) => (
             <article
-              className={`profile-card rounded-md border p-3 ${
-                profile.id === currentProfileId
-                  ? "is-active border-emerald-400/60 bg-emerald-500/10"
-                  : "border-stone-800 bg-stone-950/60"
-              }`}
+              className={`profile-card ${profile.id === currentProfileId ? "is-active" : ""}`}
               key={profile.id}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="truncate text-sm font-semibold text-stone-100">
+                  <h3>
                     {profile.birthInfo.name}
                   </h3>
-                  <p className="mt-1 text-xs text-stone-400">
+                  <p>
                     {profile.birthInfo.birthday} · {profile.birthInfo.birthHour}时 ·{" "}
                     {profile.birthInfo.gender}
                   </p>
-                  <p className="mt-1 text-xs text-stone-500">
+                  <p className="profile-date">
                     更新于 {formatDateTime(profile.updatedAt)}
                   </p>
                 </div>

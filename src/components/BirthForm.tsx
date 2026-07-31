@@ -72,10 +72,13 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
   }
 
   return (
-    <form className="tool-panel birth-form mobile-birth-card space-y-5" onSubmit={handleSubmit}>
-      <div>
+    <form className="tool-panel birth-form mobile-birth-card" onSubmit={handleSubmit}>
+      <div className="panel-heading">
+        <span className="panel-heading-mark" aria-hidden="true" />
+        <div>
         <p className="section-kicker">Birth Info</p>
         <h2 className="section-title">出生信息</h2>
+        </div>
       </div>
 
       <label className="field-label mobile-field">
@@ -158,13 +161,11 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
       </div>
 
       <label
-        className={`inline-flex items-center gap-3 text-sm ${
-          form.calendarType === "solar" ? "text-stone-500" : "text-stone-200"
-        } mobile-leap-checkbox`}
+        className={`mobile-leap-checkbox ${form.calendarType === "solar" ? "is-disabled" : ""}`}
       >
         <input
           checked={form.calendarType === "lunar" && form.isLeapMonth}
-          className="h-4 w-4 accent-emerald-500"
+          className="leap-checkbox-input"
           disabled={form.calendarType === "solar"}
           type="checkbox"
           onChange={(event) => updateField("isLeapMonth", event.target.checked)}
@@ -182,10 +183,10 @@ export function BirthForm({ initialValue, onSubmit }: BirthFormProps) {
         />
       </label>
 
-      {error ? <p className="rounded-md bg-rose-500/10 px-3 py-2 text-sm text-rose-200">{error}</p> : null}
+      {error ? <p className="form-error">{error}</p> : null}
 
       <button className="primary-action mobile-submit-button w-full" type="submit">
-        开始排盘
+        {initialValue ? "重新排盘" : "开始排盘"}
       </button>
     </form>
   );

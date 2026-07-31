@@ -4,7 +4,9 @@ import { useState } from "react";
 import { BirthForm } from "@/components/BirthForm";
 import { ChartView } from "@/components/ChartView";
 import { ProfileList } from "@/components/ProfileList";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { DesktopSidebar } from "@/components/layout/DesktopSidebar";
+import { MainWorkspace } from "@/components/layout/MainWorkspace";
 import type { BirthInfo } from "@/types/birth";
 import type { Profile } from "@/types/profile";
 
@@ -50,32 +52,14 @@ export default function Home() {
   const isMobileResultView = mobileView === "chart" && birthInfo !== null;
 
   return (
-    <main className="mobile-page app-shell min-h-screen bg-stone-950 text-stone-100">
-      <div className="app-container mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-3 py-3 md:px-4 md:py-6 lg:px-6">
-        <header
-          className={`app-header flex flex-col gap-2 border-b border-stone-800 pb-5 ${
-            isMobileResultView ? "max-lg:hidden" : ""
-          }`}
-        >
-          <div className="app-header-row">
-            <div>
-              <p className="section-kicker">Open Ziwei Chart MVP</p>
-              <h1 className="app-title text-2xl font-semibold tracking-normal text-stone-50 sm:text-3xl">
-                紫微斗数排盘工具
-              </h1>
-            </div>
-            <ThemeToggle />
-          </div>
-        </header>
+    <main className="mobile-page app-shell">
+      <AppHeader currentProfileName={birthInfo?.name} />
 
-        <div className="app-layout grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-          <aside
-            className={`app-sidebar space-y-6 ${
-              isMobileResultView ? "max-lg:hidden" : ""
-            }`}
-          >
+      <div className="app-body">
+        <DesktopSidebar>
+          <div className={isMobileResultView ? "is-hidden-on-mobile" : ""}>
             <BirthForm initialValue={formValue} onSubmit={handleSubmit} />
-            <div className="max-md:hidden">
+            <div className="desktop-profile-manager">
               <ProfileList
                 currentBirthInfo={birthInfo}
                 currentProfileId={currentProfileId}
@@ -83,7 +67,7 @@ export default function Home() {
                 onSaved={handleSaved}
               />
             </div>
-            <details className="mobile-collapse-card mobile-profile-manager md:hidden">
+            <details className="mobile-collapse-card mobile-profile-manager mobile-only">
               <summary>命例管理</summary>
               <div className="mobile-profile-actions">
                 <ProfileList
@@ -94,17 +78,15 @@ export default function Home() {
                 />
               </div>
             </details>
-          </aside>
+          </div>
+        </DesktopSidebar>
 
-          <div
-            className={
-              mobileView === "input" || !birthInfo ? "max-lg:hidden" : undefined
-            }
-          >
+        <MainWorkspace>
+          <div className={mobileView === "input" || !birthInfo ? "is-hidden-on-mobile" : ""}>
             <ChartView birthInfo={birthInfo} />
 
             {isMobileResultView ? (
-              <details className="mobile-collapse-card mobile-profile-manager mt-4 md:hidden">
+              <details className="mobile-collapse-card mobile-profile-manager mobile-only result-profile-manager">
                 <summary>命例管理</summary>
                 <div className="mobile-profile-actions">
                   <button
@@ -124,7 +106,7 @@ export default function Home() {
               </details>
             ) : null}
           </div>
-        </div>
+        </MainWorkspace>
       </div>
     </main>
   );

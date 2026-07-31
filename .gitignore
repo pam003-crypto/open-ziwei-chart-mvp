@@ -8,3 +8,8 @@ dist
 紫微斗数王亭之/*.doc
 紫微斗数王亭之/*.docx
 紫微斗数王亭之/*.txt
+
+# Keep the optimized web assets in Git; retain the large generated sources locally.
+public/assets/ink-paper-header.png
+public/assets/paper-bamboo-mountain.png
+public/assets/ziwei-seal.png

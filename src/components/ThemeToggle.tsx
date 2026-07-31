@@ -2,20 +2,20 @@
 
 import { useEffect, useState } from "react";
 
-type ThemeMode = "jade-light" | "jade-dark";
+type ThemeMode = "plain-paper" | "rice-paper";
 
-const THEME_KEY = "open-ziwei-chart-mvp:theme";
+const THEME_KEY = "open-ziwei-chart-mvp:paper-theme:v2";
 
 function applyTheme(theme: ThemeMode) {
   document.documentElement.dataset.theme = theme;
 }
 
 export function ThemeToggle({ compact = false }: { compact?: boolean }) {
-  const [theme, setTheme] = useState<ThemeMode>("jade-dark");
+  const [theme, setTheme] = useState<ThemeMode>("plain-paper");
 
   useEffect(() => {
     const saved = window.localStorage.getItem(THEME_KEY);
-    const initialTheme = saved === "jade-light" ? "jade-light" : "jade-dark";
+    const initialTheme = saved === "rice-paper" ? "rice-paper" : "plain-paper";
 
     setTheme(initialTheme);
     applyTheme(initialTheme);
@@ -31,20 +31,20 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
     <div className={compact ? "theme-toggle is-compact" : "theme-toggle"} aria-label="主题切换">
       <span className="theme-toggle-indicator" data-theme-position={theme} />
       <button
-        aria-pressed={theme === "jade-light"}
-        className={theme === "jade-light" ? "is-active" : ""}
+        aria-pressed={theme === "plain-paper"}
+        className={theme === "plain-paper" ? "is-active" : ""}
         type="button"
-        onClick={() => updateTheme("jade-light")}
+        onClick={() => updateTheme("plain-paper")}
       >
-        玉白
+        素纸
       </button>
       <button
-        aria-pressed={theme === "jade-dark"}
-        className={theme === "jade-dark" ? "is-active" : ""}
+        aria-pressed={theme === "rice-paper"}
+        className={theme === "rice-paper" ? "is-active" : ""}
         type="button"
-        onClick={() => updateTheme("jade-dark")}
+        onClick={() => updateTheme("rice-paper")}
       >
-        墨青
+        暖纸
       </button>
     </div>
   );

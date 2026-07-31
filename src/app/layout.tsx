@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Open Ziwei Chart MVP",
-  description: "A minimal open-source Ziwei chart web app MVP.",
+  title: "紫微斗数排盘工具 | 东方术数研究平台",
+  description: "基于开源排盘与本地规则引擎的紫微斗数研究工作台。",
 };
 
 export default function RootLayout({

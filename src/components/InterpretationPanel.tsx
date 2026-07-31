@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { buildAIInterpretInput } from "@/lib/ai/buildAIInterpretInput";
 import { interpretWithRuleResult, resolveInterpretationScope } from "@/lib/interpretation/interpret";
 import type { AstrolabeResult } from "@/lib/astrolabe";
@@ -30,6 +30,7 @@ type InterpretationPanelProps = {
 };
 
 type SectionKey = keyof InterpretationResult["sections"];
+type InterpretationTab = "ai" | "life" | "trine" | "pattern" | "decade" | "year";
 
 const SECTION_LABELS: Array<{ key: SectionKey; title: string }> = [
   { key: "overview", title: "总体趋势" },
@@ -40,6 +41,24 @@ const SECTION_LABELS: Array<{ key: SectionKey; title: string }> = [
   { key: "risk", title: "风险提醒" },
   { key: "advice", title: "行动建议" },
 ];
+
+const INTERPRETATION_TABS: Array<{ key: InterpretationTab; label: string }> = [
+  { key: "ai", label: "AI 智能解读" },
+  { key: "life", label: "命宫解读" },
+  { key: "trine", label: "三方四正" },
+  { key: "pattern", label: "格局分析" },
+  { key: "decade", label: "大运趋势" },
+  { key: "year", label: "流年分析" },
+];
+
+const TAB_SECTIONS: Record<InterpretationTab, SectionKey[]> = {
+  ai: ["overview", "advice"],
+  life: ["overview", "relationship", "health"],
+  trine: ["overview", "career", "wealth"],
+  pattern: ["career", "wealth", "relationship", "health"],
+  decade: ["overview", "risk", "advice"],
+  year: ["overview", "career", "wealth", "risk", "advice"],
+};
 
 const PALACE_NAMES = [
   "命宫",
@@ -224,6 +243,7 @@ export function InterpretationPanel({
   selectedPalaceId,
   variant = "desktop",
 }: InterpretationPanelProps) {
+  const [activeTab, setActiveTab] = useState<InterpretationTab>("ai");
   const interpretationData = useMemo(
     () =>
       interpretWithRuleResult({
@@ -249,54 +269,95 @@ export function InterpretationPanel({
       }),
     [astrolabe, birthInfo, calendar, result, ruleResult, timeSelection],
   );
+  const visibleSections = TAB_SECTIONS[activeTab];
+  const insightSections: SectionKey[] = ["career", "wealth", "relationship", "health", "risk", "advice"];
 
   return (
     <section className={`interpretation-panel is-${variant}`}>
-      <div className="interpretation-header">
+      <div className="interpretation-header workspace-section-heading">
         <div>
           <p className="section-kicker">Interpretation</p>
-          <h2 className="section-title mt-2">{result.title}</h2>
-          <p className="mt-2 text-sm text-stone-400">
-            基于本地规则引擎生成，仅作为传统命理参考。
+          <h2 className="section-title">命盘解读</h2>
+          <p className="section-helper">
+            {result.title} · 基于本地规则引擎生成，仅作为传统命理参考。
           </p>
         </div>
         <span className="interpretation-level">{result.level}</span>
       </div>
 
-      <p className="interpretation-disclaimer">{result.summary}</p>
-
-      <div className="interpretation-palaces" aria-label="重点宫位">
-        <PalaceGroup
-          label="主线宫位"
-          onPalaceHover={onPalaceHover}
-          onPalaceSelect={onPalaceSelect}
-          palaces={result.primaryPalaces}
-        />
-        <PalaceGroup
-          label="辅助宫位"
-          onPalaceHover={onPalaceHover}
-          onPalaceSelect={onPalaceSelect}
-          palaces={result.secondaryPalaces}
-        />
-      </div>
-
-      <div className={variant === "mobile" ? "interpretation-grid is-accordion" : "interpretation-grid"}>
-        {SECTION_LABELS.map(({ key, title }) => (
-          <InterpretationCard
-            key={key}
-            onPalaceHover={onPalaceHover}
-            onPalaceSelect={onPalaceSelect}
-            sectionKey={key}
-            variant={variant}
-            section={{
-              ...result.sections[key],
-              title,
-            }}
-          />
+      <div className="interpretation-tabs" role="tablist" aria-label="解读维度">
+        {INTERPRETATION_TABS.map((tab) => (
+          <button
+            aria-selected={activeTab === tab.key}
+            className={activeTab === tab.key ? "is-active" : ""}
+            key={tab.key}
+            role="tab"
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </button>
         ))}
       </div>
 
-      <AIInterpretPanel request={aiInterpretRequest} variant={variant} />
+      <div className={variant === "mobile" ? "interpretation-workspace is-mobile" : "interpretation-workspace"}>
+        <div className="interpretation-main-column">
+          <p className="interpretation-disclaimer">{result.summary}</p>
+
+          <div className="interpretation-palaces" aria-label="重点宫位">
+            <PalaceGroup
+              label="主线宫位"
+              onPalaceHover={onPalaceHover}
+              onPalaceSelect={onPalaceSelect}
+              palaces={result.primaryPalaces}
+            />
+            <PalaceGroup
+              label="辅助宫位"
+              onPalaceHover={onPalaceHover}
+              onPalaceSelect={onPalaceSelect}
+              palaces={result.secondaryPalaces}
+            />
+          </div>
+
+          <div className={variant === "mobile" ? "interpretation-grid is-accordion" : "interpretation-grid"}>
+            {SECTION_LABELS.filter(({ key }) => visibleSections.includes(key)).map(({ key, title }) => (
+              <InterpretationCard
+                key={key}
+                onPalaceHover={onPalaceHover}
+                onPalaceSelect={onPalaceSelect}
+                sectionKey={key}
+                variant={variant}
+                section={{
+                  ...result.sections[key],
+                  title,
+                }}
+              />
+            ))}
+          </div>
+
+          {activeTab === "ai" ? (
+            <AIInterpretPanel request={aiInterpretRequest} variant={variant} />
+          ) : null}
+        </div>
+
+        {variant === "desktop" ? (
+          <aside className="key-insights-panel" aria-label="命盘要点提示">
+            <div className="key-insights-heading">
+              <p className="section-kicker">Key Insights</p>
+              <h3>要点提示</h3>
+            </div>
+            {insightSections.map((key) => {
+              const title = SECTION_LABELS.find((item) => item.key === key)?.title ?? key;
+              return (
+                <article className="key-insight-item" key={key}>
+                  <span>{title}</span>
+                  <p>{result.sections[key].conclusion}</p>
+                </article>
+              );
+            })}
+          </aside>
+        ) : null}
+      </div>
     </section>
   );
 }

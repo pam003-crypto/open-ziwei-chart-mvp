@@ -23,11 +23,11 @@ import {
   type TimeSelection,
 } from "./TransitControls";
 import { DesktopHorizontalTimeNavigator } from "./DesktopHorizontalTimeNavigator";
+import { ChartSummary } from "./chart/ChartSummary";
 import { BirthInfoSummary } from "./mobile/BirthInfoSummary";
 import { CurrentContextBar } from "./mobile/CurrentContextBar";
 import { MobileChartLayout } from "./mobile/MobileChartLayout";
 import { MobileTimeNavigator } from "./mobile/MobileTimeNavigator";
-import { MobileTopBar } from "./mobile/MobileTopBar";
 import {
   buildPalaceViewModel,
   getHoroscope,
@@ -43,7 +43,7 @@ const Iztrolabe = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[640px] items-center justify-center rounded-md border border-stone-200 bg-white text-sm text-stone-500">
+      <div className="chart-loading-state">
         命盘加载中...
       </div>
     ),
@@ -169,15 +169,6 @@ function syncClickablePalaces(
     });
     palace.classList.toggle("interpretation-preview-palace", palaceIndex === previewPalaceIndex);
   });
-}
-
-function InfoItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-xs text-stone-400">{label}</dt>
-      <dd className="mt-1 truncate text-sm font-medium text-stone-100">{value}</dd>
-    </div>
-  );
 }
 
 export function ChartView({ birthInfo }: ChartViewProps) {
@@ -405,12 +396,12 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
   if (!birthInfo) {
     return (
-      <section className="chart-shell flex min-h-[360px] items-center justify-center text-center">
+      <section className="workspace-empty-state">
         <div>
-          <p className="section-kicker">Astrolabe</p>
-          <h2 className="section-title mt-2">等待排盘</h2>
-          <p className="mt-3 max-w-md text-sm leading-6 text-stone-400">
-            输入出生信息后，这里会生成紫微斗数命盘。
+          <p className="section-kicker">Ziwei Chart</p>
+          <h2 className="section-title">等待排盘</h2>
+          <p>
+            完成左侧出生信息后，命盘、运限与解读会在这里展开。
           </p>
         </div>
       </section>
@@ -419,8 +410,8 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
   if (!chartState.ok) {
     return (
-      <section className="chart-shell">
-        <p className="rounded-md border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+      <section className="workspace-error-state">
+        <p>
           {chartState.error}
         </p>
       </section>
@@ -446,9 +437,13 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
   if (isMobileLayout) {
     return (
-      <section className="chart-shell mobile-chart-shell">
+      <section className="mobile-chart-shell">
         <div className="mobile-layout">
-          <MobileTopBar />
+          <BirthInfoSummary
+            astrolabe={astrolabe}
+            birthInfo={birthInfo}
+            calendar={calendar}
+          />
 
           <CurrentContextBar
             timeSelection={timeSelection}
@@ -492,70 +487,59 @@ export function ChartView({ birthInfo }: ChartViewProps) {
             variant="mobile"
           />
 
-          <BirthInfoSummary
-            astrolabe={astrolabe}
-            birthInfo={birthInfo}
-            calendar={calendar}
-          />
         </div>
       </section>
     );
   }
 
   return (
-    <section className="chart-shell space-y-5">
-      <div className="chart-heading">
-        <div>
-          <p className="section-kicker">Ziwei Chart</p>
-          <h2 className="section-title mt-2">排盘结果</h2>
-        </div>
-      </div>
-
-      <dl className="chart-info-grid grid gap-4 rounded-md border border-stone-800 bg-stone-950/70 p-4 sm:grid-cols-2 lg:grid-cols-4">
-        <InfoItem label="姓名" value={birthInfo.name} />
-        <InfoItem label="性别" value={birthInfo.gender} />
-        <InfoItem label="公历日期" value={calendar.solarDate || astrolabe.solarDate} />
-        <InfoItem label="农历日期" value={calendar.lunarDate || astrolabe.lunarDate} />
-        <InfoItem label="出生时辰" value={`${birthInfo.birthHour}时`} />
-        <InfoItem
-          label="当前历法"
-          value={birthInfo.calendarType === "solar" ? "公历" : "农历"}
-        />
-        <InfoItem
-          label="是否闰月"
-          value={birthInfo.calendarType === "lunar" && birthInfo.isLeapMonth ? "是" : "否"}
-        />
-        <InfoItem label="干支" value={calendar.ganzhi || astrolabe.chineseDate} />
-        <InfoItem label="生肖" value={calendar.zodiac || astrolabe.zodiac} />
-        <InfoItem label="命宫" value={astrolabe.earthlyBranchOfSoulPalace} />
-        <InfoItem label="身宫" value={astrolabe.earthlyBranchOfBodyPalace} />
-        <InfoItem label="命主 / 身主" value={`${astrolabe.soul} / ${astrolabe.body}`} />
-      </dl>
+    <section className="chart-workspace">
+      <ChartSummary astrolabe={astrolabe} birthInfo={birthInfo} calendar={calendar} />
 
       {birthInfo.note ? (
-        <p className="chart-note rounded-md border border-stone-800 bg-stone-950/70 px-4 py-3 text-sm leading-6 text-stone-300">
+        <p className="chart-note">
           {birthInfo.note}
         </p>
       ) : null}
 
       <div className="desktop-main-panel">
-        <DesktopHorizontalTimeNavigator
-          astrolabe={astrolabe}
-          transitDate={transitDate}
-          transitHour={transitHour}
-          activeScope={transitContext.scope}
-          timeSelection={timeSelection}
-          onTransitDateChange={setTransitDate}
-          onTransitHourChange={setTransitHour}
-          onTransitContextChange={setTransitContext}
-          onTimeSelectionChange={setTimeSelection}
-        />
-
-        <div className="chart-board-container">
-          <div className="chart-frame chart-board overflow-hidden rounded-md border border-stone-800 bg-stone-200 p-2 shadow-2xl shadow-black/30 sm:p-3">
-            {renderChartCanvas("mx-auto w-full")}
+        <section className="time-dimension-section section-shell">
+          <div className="workspace-section-heading is-compact">
+            <div>
+              <p className="section-kicker">Time Dimension</p>
+              <h2 className="section-title">时间维度</h2>
+            </div>
+            <button className="text-action" type="button" onClick={() => setTimeSelection({})}>
+              重置选择
+            </button>
           </div>
-        </div>
+          <DesktopHorizontalTimeNavigator
+            astrolabe={astrolabe}
+            transitDate={transitDate}
+            transitHour={transitHour}
+            activeScope={transitContext.scope}
+            timeSelection={timeSelection}
+            onTransitDateChange={setTransitDate}
+            onTransitHourChange={setTransitHour}
+            onTransitContextChange={setTransitContext}
+            onTimeSelectionChange={setTimeSelection}
+          />
+        </section>
+
+        <section className="chart-section section-shell">
+          <div className="workspace-section-heading is-compact">
+            <div>
+              <p className="section-kicker">Astrolabe</p>
+              <h2 className="section-title">命盘主体</h2>
+            </div>
+            <p className="section-helper">单击查看三方四正，双击查看宫位详情</p>
+          </div>
+          <div className="chart-board-container">
+            <div className="chart-frame chart-board">
+              {renderChartCanvas("mx-auto w-full")}
+            </div>
+          </div>
+        </section>
 
         <InterpretationPanel
           astrolabe={astrolabe}

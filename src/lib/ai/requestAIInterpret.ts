@@ -1,11 +1,15 @@
 import type { AISettings } from "./aiSettings";
 import type {
+  AIEndpointType,
   AIInterpretRequest,
   AIInterpretResponse,
   AIProviderConfig,
   AIProviderErrorResponse,
   AITestConnectionResponse,
 } from "./types";
+import { buildProviderEndpoint } from "./openaiPayload";
+
+const configuredProjectApiOrigin = process.env.NEXT_PUBLIC_AI_API_ORIGIN?.trim().replace(/\/+$/, "");
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -27,6 +31,60 @@ function buildProviderConfig(settings: AISettings): AIProviderConfig {
 
 function getEndpointTypeLabel(endpointType?: string): string {
   return endpointType === "responses" ? "Responses API" : "Chat Completions API";
+}
+
+function resolveProjectEndpoint(endpoint: string): string {
+  const pathname = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+
+  return configuredProjectApiOrigin ? `${configuredProjectApiOrigin}${pathname}` : pathname;
+}
+
+function getAbsoluteEndpoint(endpoint: string): string {
+  if (typeof window === "undefined") {
+    return endpoint;
+  }
+
+  try {
+    return new URL(endpoint, window.location.origin).toString();
+  } catch {
+    return endpoint;
+  }
+}
+
+function getStaticHostingHint(): string {
+  if (typeof window !== "undefined" && window.location.hostname.endsWith("github.io")) {
+    return "当前页面运行在 GitHub Pages 静态托管上，GitHub Pages 无法执行 Next.js /api Route Handler。请将项目部署到 Vercel 或 Node 服务，或通过 NEXT_PUBLIC_AI_API_ORIGIN 指向本项目的服务端部署。";
+  }
+
+  return "请确认当前 Next.js 部署支持 Route Handler，并且本项目服务端正在运行。";
+}
+
+function formatProjectApiFailure(params: {
+  projectEndpoint: string;
+  endpointType: AIEndpointType;
+  providerEndpoint: string;
+  status?: number;
+  detail?: string;
+  networkMessage?: string;
+}): string {
+  const reason = params.status === 404
+    ? "本项目 AI Route Handler 不存在或未部署。"
+    : params.networkMessage
+      ? `浏览器无法连接本项目 AI 接口：${params.networkMessage}`
+      : "本项目 AI 接口返回了无法识别的响应。";
+
+  return [
+    reason,
+    `项目接口：${getAbsoluteEndpoint(params.projectEndpoint)}`,
+    `外部接口类型：${getEndpointTypeLabel(params.endpointType)}`,
+    `预期外部地址：${params.providerEndpoint}`,
+    params.status ? `HTTP 状态码：${params.status}` : "",
+    params.detail ? `接口返回：${params.detail.slice(0, 1000)}` : "",
+    getStaticHostingHint(),
+    "API Key 未包含在错误信息中。",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function getSuggestion(error: AIProviderErrorResponse): string {
@@ -60,9 +118,19 @@ function formatProviderError(error: AIProviderErrorResponse): string {
     .join("\n");
 }
 
-async function readErrorMessage(response: Response): Promise<string> {
+async function readErrorMessage(
+  response: Response,
+  projectEndpoint: string,
+  providerConfig: AIProviderConfig,
+): Promise<string> {
+  const providerEndpoint = buildProviderEndpoint(
+    providerConfig.baseUrl,
+    providerConfig.endpointType,
+  );
+  const responseText = await response.text();
+
   try {
-    const payload = (await response.json()) as unknown;
+    const payload = JSON.parse(responseText) as unknown;
 
     if (isProviderErrorResponse(payload)) {
       return formatProviderError(payload);
@@ -72,32 +140,68 @@ async function readErrorMessage(response: Response): Promise<string> {
       return String(payload.error || payload.message || "AI 解读生成失败");
     }
 
-    return "AI 解读生成失败";
+    return formatProjectApiFailure({
+      projectEndpoint,
+      endpointType: providerConfig.endpointType,
+      providerEndpoint,
+      status: response.status,
+    });
   } catch {
-    return "AI 解读暂时不可用。请确认当前部署环境支持 /api/ai-interpret。";
+    return formatProjectApiFailure({
+      projectEndpoint,
+      endpointType: providerConfig.endpointType,
+      providerEndpoint,
+      status: response.status,
+      detail: responseText,
+    });
   }
 }
 
-async function postProjectEndpoint<T>(endpoint: string, body: unknown): Promise<T> {
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+async function postProjectEndpoint<T>(
+  endpoint: string,
+  body: unknown,
+  providerConfig: AIProviderConfig,
+): Promise<T> {
+  const projectEndpoint = resolveProjectEndpoint(endpoint);
+  let response: Response;
+
+  try {
+    response = await fetch(projectEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (error) {
+    const networkMessage = error instanceof Error ? error.message : "网络请求失败";
+
+    throw new Error(
+      formatProjectApiFailure({
+        projectEndpoint,
+        endpointType: providerConfig.endpointType,
+        providerEndpoint: buildProviderEndpoint(
+          providerConfig.baseUrl,
+          providerConfig.endpointType,
+        ),
+        networkMessage,
+      }),
+    );
+  }
 
   if (!response.ok) {
-    throw new Error(await readErrorMessage(response));
+    throw new Error(await readErrorMessage(response, projectEndpoint, providerConfig));
   }
 
   return (await response.json()) as T;
 }
 
 export async function testAIConnection(settings: AISettings): Promise<AITestConnectionResponse> {
+  const providerConfig = buildProviderConfig(settings);
   const payload = await postProjectEndpoint<AITestConnectionResponse>(
-    "api/ai-test-connection",
-    buildProviderConfig(settings),
+    "/api/ai-test-connection",
+    providerConfig,
+    providerConfig,
   );
 
   if (!payload.ok) {
@@ -111,21 +215,23 @@ export async function requestAIInterpret(
   request: AIInterpretRequest,
   settings: AISettings,
 ): Promise<AIInterpretResponse> {
+  const providerConfig = buildProviderConfig(settings);
+
   if (settings.mode === "browser") {
-    return postProjectEndpoint<AIInterpretResponse>("api/ai-interpret", {
+    return postProjectEndpoint<AIInterpretResponse>("/api/ai-interpret", {
       request,
-      providerConfig: buildProviderConfig(settings),
-    });
+      providerConfig,
+    }, providerConfig);
   }
 
   if (settings.mode === "custom") {
-    return postProjectEndpoint<AIInterpretResponse>("api/ai-interpret", {
+    return postProjectEndpoint<AIInterpretResponse>("/api/ai-interpret", {
       request,
       proxyEndpoint: settings.endpoint,
-    });
+    }, providerConfig);
   }
 
-  return postProjectEndpoint<AIInterpretResponse>("api/ai-interpret", {
+  return postProjectEndpoint<AIInterpretResponse>("/api/ai-interpret", {
     request,
-  });
+  }, providerConfig);
 }

@@ -39,7 +39,9 @@ npm run build
 
 [https://pam003-crypto.github.io/open-ziwei-chart-mvp/](https://pam003-crypto.github.io/open-ziwei-chart-mvp/)
 
-注意：GitHub Pages 是静态托管，不能执行 Next.js API Route。AI 解读的服务端代理接口需要运行在 `npm run dev`、Vercel 或 Node 服务环境。页面提供了“AI 设置”，可切换为代理 API 或纯 API 模式；纯 API 模式允许用户自行填写 Base URL、模型、API Key 和接口类型，并由本项目服务端代理请求外部模型。公开站点不建议在浏览器中长期保存 API Key；更稳妥的方式是部署到 Vercel / Node 服务，并把 Key 放在服务器环境变量里。
+注意：GitHub Pages 是静态托管，不能执行 Next.js API Route。AI 解读的服务端代理接口需要运行在 `npm run dev`、Vercel 或 Node 服务环境。非 Pages 构建会保留 Next.js 服务端运行时，可使用 `npm run build && npm start`。如果静态页面与服务端分开部署，可在 GitHub 仓库变量 `AI_API_ORIGIN`（或构建环境变量 `NEXT_PUBLIC_AI_API_ORIGIN`）中填写本项目的 Next.js 服务地址，并在服务端使用 `AI_ALLOWED_ORIGINS` 允许 Pages Origin。
+
+页面提供“AI 设置”，纯 API 模式允许用户自行填写 Base URL、模型、API Key 和接口类型；浏览器只调用本项目的 `/api/ai-test-connection` 与 `/api/ai-interpret`，由 Route Handler 请求外部模型。公开站点不建议在浏览器中长期保存 API Key；更稳妥的方式是使用服务器环境变量配置默认服务。
 
 ## 当前功能
 

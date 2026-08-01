@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
 import { callOpenAIInterpret } from "@/lib/ai/openaiClient";
 import {
   callAIProviderInterpret,
   getAIProviderPublicError,
 } from "@/lib/ai/providerClient";
+import { aiJsonResponse, aiOptionsResponse } from "@/lib/ai/routeResponse";
 import type { AIEndpointType, AIInterpretRequest, AIProviderConfig } from "@/lib/ai/types";
 
 export const runtime = "nodejs";
@@ -135,14 +135,14 @@ export async function POST(request: Request) {
     const rawBody = await request.text();
 
     if (rawBody.length > MAX_BODY_LENGTH) {
-      return NextResponse.json({ error: "AI 解读输入过大" }, { status: 413 });
+      return aiJsonResponse(request, { error: "AI 解读输入过大" }, 413);
     }
 
     const body = JSON.parse(rawBody) as unknown;
     const routeBody = getRouteBody(body);
 
     if (!routeBody) {
-      return NextResponse.json({ error: "AI 解读输入格式不正确" }, { status: 400 });
+      return aiJsonResponse(request, { error: "AI 解读输入格式不正确" }, 400);
     }
 
     if (routeBody.providerConfig) {
@@ -151,27 +151,31 @@ export async function POST(request: Request) {
         routeBody.providerConfig,
       );
 
-      return NextResponse.json(interpretation);
+      return aiJsonResponse(request, interpretation);
     }
 
     if (routeBody.proxyEndpoint) {
       const interpretation = await callProxyEndpoint(routeBody.request, routeBody.proxyEndpoint);
 
-      return NextResponse.json(interpretation);
+      return aiJsonResponse(request, interpretation);
     }
 
     const interpretation = await callOpenAIInterpret(routeBody.request);
 
-    return NextResponse.json(interpretation);
+    return aiJsonResponse(request, interpretation);
   } catch (error) {
     const providerError = getAIProviderPublicError(error);
 
     if (providerError.errorType !== "unknown" || providerError.endpoint) {
-      return NextResponse.json(providerError, { status: providerError.status ?? 502 });
+      return aiJsonResponse(request, providerError, providerError.status ?? 502);
     }
 
     const message = error instanceof Error ? error.message : "AI 解读生成失败";
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return aiJsonResponse(request, { error: message }, 500);
   }
+}
+
+export function OPTIONS(request: Request) {
+  return aiOptionsResponse(request);
 }

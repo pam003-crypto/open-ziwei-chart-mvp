@@ -5,7 +5,6 @@ const repositoryName = "open-ziwei-chart-mvp";
 const pagesBasePath = `/${repositoryName}`;
 
 const nextConfig: NextConfig = {
-  output: "export",
   reactStrictMode: true,
   trailingSlash: true,
   images: {
@@ -13,6 +12,7 @@ const nextConfig: NextConfig = {
   },
   ...(isGitHubPages
     ? {
+        output: "export" as const,
         assetPrefix: `${pagesBasePath}/`,
         basePath: pagesBasePath,
       }

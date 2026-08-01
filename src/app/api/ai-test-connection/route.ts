@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import {
   getAIProviderPublicError,
   testAIProviderConnection,
 } from "@/lib/ai/providerClient";
+import { aiJsonResponse, aiOptionsResponse } from "@/lib/ai/routeResponse";
 import type { AIEndpointType, AIProviderConfig } from "@/lib/ai/types";
 
 export const runtime = "nodejs";
@@ -42,22 +42,27 @@ export async function POST(request: Request) {
     const providerConfig = getProviderConfig(body);
 
     if (!providerConfig) {
-      return NextResponse.json(
+      return aiJsonResponse(
+        request,
         {
           ok: false,
           errorType: "unknown",
           message: "测试连接参数不完整，请填写 Base URL、模型、Key 和接口类型。",
         },
-        { status: 400 },
+        400,
       );
     }
 
     const result = await testAIProviderConnection(providerConfig);
 
-    return NextResponse.json(result);
+    return aiJsonResponse(request, result);
   } catch (error) {
     const providerError = getAIProviderPublicError(error);
 
-    return NextResponse.json(providerError, { status: providerError.status ?? 502 });
+    return aiJsonResponse(request, providerError, providerError.status ?? 502);
   }
+}
+
+export function OPTIONS(request: Request) {
+  return aiOptionsResponse(request);
 }

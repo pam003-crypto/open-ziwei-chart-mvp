@@ -378,31 +378,6 @@
     display: none;
   }
 
-  .ai-interpret-panel.is-mobile {
-    padding: 0;
-  }
-
-  .ai-interpret-panel.is-mobile[open] {
-    padding: 0 12px 12px;
-  }
-
-  .ai-panel-header,
-  .ai-action-row,
-  .ai-settings-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .ai-style-select {
-    grid-template-columns: 1fr;
-  }
-
-  .ai-settings-grid,
-  .ai-more-options-grid,
-  .ai-result-grid {
-    grid-template-columns: 1fr;
-  }
-
   .palace-zoom-backdrop {
     align-items: flex-end;
     padding: 0;

@@ -1,28 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { buildAIInterpretInput } from "@/lib/ai/buildAIInterpretInput";
 import { interpretWithRuleResult, resolveInterpretationScope } from "@/lib/interpretation/interpret";
 import type { AstrolabeResult } from "@/lib/astrolabe";
-import type { CalendarSummary } from "@/lib/calendar";
-import type { BirthInfo } from "@/types/birth";
 import type {
   InterpretationResult,
   InterpretationSection,
   PalaceBrief,
   TransitContext,
 } from "@/types/interpretation";
-import type { TimeSelection } from "./TransitControls";
-import { AIInterpretPanel } from "./AIInterpretPanel";
 
 type InterpretationPanelProps = {
   astrolabe: AstrolabeResult;
-  birthInfo?: BirthInfo;
-  calendar?: CalendarSummary;
   onPalaceSelect?: (palaceName: string) => void;
   onPalaceHover?: (palaceName: string | null) => void;
   transitContext: TransitContext;
-  timeSelection?: TimeSelection;
   targetDate: Date;
   transitHour: number;
   selectedPalaceId?: number | string | null;
@@ -30,7 +22,7 @@ type InterpretationPanelProps = {
 };
 
 type SectionKey = keyof InterpretationResult["sections"];
-type InterpretationTab = "ai" | "life" | "trine" | "pattern" | "decade" | "year";
+type InterpretationTab = "life" | "trine" | "pattern" | "decade" | "year";
 
 const SECTION_LABELS: Array<{ key: SectionKey; title: string }> = [
   { key: "overview", title: "总体趋势" },
@@ -43,7 +35,6 @@ const SECTION_LABELS: Array<{ key: SectionKey; title: string }> = [
 ];
 
 const INTERPRETATION_TABS: Array<{ key: InterpretationTab; label: string }> = [
-  { key: "ai", label: "AI 智能解读" },
   { key: "life", label: "命宫解读" },
   { key: "trine", label: "三方四正" },
   { key: "pattern", label: "格局分析" },
@@ -52,7 +43,6 @@ const INTERPRETATION_TABS: Array<{ key: InterpretationTab; label: string }> = [
 ];
 
 const TAB_SECTIONS: Record<InterpretationTab, SectionKey[]> = {
-  ai: ["overview", "advice"],
   life: ["overview", "relationship", "health"],
   trine: ["overview", "career", "wealth"],
   pattern: ["career", "wealth", "relationship", "health"],
@@ -232,18 +222,15 @@ function InterpretationCard({
 
 export function InterpretationPanel({
   astrolabe,
-  birthInfo,
-  calendar,
   onPalaceHover,
   onPalaceSelect,
-  timeSelection,
   transitContext,
   targetDate,
   transitHour,
   selectedPalaceId,
   variant = "desktop",
 }: InterpretationPanelProps) {
-  const [activeTab, setActiveTab] = useState<InterpretationTab>("ai");
+  const [activeTab, setActiveTab] = useState<InterpretationTab>("life");
   const interpretationData = useMemo(
     () =>
       interpretWithRuleResult({
@@ -256,19 +243,7 @@ export function InterpretationPanel({
       }),
     [astrolabe, transitContext, targetDate, transitHour, selectedPalaceId],
   );
-  const { result, ruleResult } = interpretationData;
-  const aiInterpretRequest = useMemo(
-    () =>
-      buildAIInterpretInput({
-        astrolabe,
-        birthInfo,
-        calendar,
-        interpretation: result,
-        ruleResult,
-        selectedTime: timeSelection,
-      }),
-    [astrolabe, birthInfo, calendar, result, ruleResult, timeSelection],
-  );
+  const { result } = interpretationData;
   const visibleSections = TAB_SECTIONS[activeTab];
   const insightSections: SectionKey[] = ["career", "wealth", "relationship", "health", "risk", "advice"];
 
@@ -335,9 +310,6 @@ export function InterpretationPanel({
             ))}
           </div>
 
-          {activeTab === "ai" ? (
-            <AIInterpretPanel request={aiInterpretRequest} variant={variant} />
-          ) : null}
         </div>
 
         {variant === "desktop" ? (

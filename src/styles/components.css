@@ -967,11 +967,6 @@ textarea.field-input {
   line-height: 1.65;
 }
 
-.ai-error,
-.ai-connection-message {
-  white-space: pre-line;
-}
-
 .ai-settings-warning,
 .ai-error,
 .ai-connection-message.is-error {

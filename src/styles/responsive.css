@@ -33,6 +33,19 @@
   .summary-column.is-wide {
     display: none;
   }
+
+}
+
+@media (max-width: 1180px) {
+  .desktop-result-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .desktop-interpretation-column {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1100px) {
@@ -154,11 +167,27 @@
   }
 
   .desktop-workbench > div,
+  .desktop-sidebar-content,
+  .desktop-sidebar-panels,
   .main-workspace > div,
   .chart-workspace,
   .desktop-main-panel,
+  .desktop-result-layout,
+  .desktop-chart-column,
   .mobile-layout {
     gap: 10px;
+  }
+
+  .app-body.is-input-sidebar-collapsed {
+    display: block;
+  }
+
+  .app-body.is-input-sidebar-collapsed .desktop-sidebar-panels {
+    display: grid;
+  }
+
+  .desktop-sidebar-collapse-control {
+    display: none;
   }
 
   .is-hidden-on-mobile {

@@ -313,6 +313,48 @@ textarea.field-input {
   min-width: 0;
 }
 
+.desktop-result-layout {
+  display: grid;
+  min-width: 0;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: 16px;
+}
+
+.desktop-chart-column {
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+}
+
+.desktop-interpretation-column {
+  position: sticky;
+  top: 82px;
+  min-width: 0;
+  max-height: calc(100vh - 98px);
+  overflow-y: auto;
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.desktop-interpretation-column > .interpretation-panel {
+  min-height: 100%;
+}
+
+.desktop-interpretation-column .interpretation-workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.desktop-interpretation-column .key-insights-panel {
+  display: grid;
+  border-top: 1px solid var(--border-soft);
+  border-left: 0;
+  padding-top: 14px;
+  padding-left: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
 .chart-summary-section {
   border: 1px solid var(--border-paper);
   border-radius: var(--radius-panel);

@@ -232,6 +232,42 @@ select {
   gap: 14px;
 }
 
+.desktop-sidebar-content {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+}
+
+.desktop-sidebar-panels {
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+}
+
+.desktop-sidebar-collapse-control {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 30px;
+}
+
+.app-body.is-input-sidebar-collapsed {
+  grid-template-columns: 62px minmax(0, 1fr);
+}
+
+.app-body.is-input-sidebar-collapsed .desktop-sidebar-collapse-control {
+  justify-content: center;
+}
+
+.app-body.is-input-sidebar-collapsed .desktop-sidebar-collapse-control .text-action {
+  width: 52px;
+  padding: 0;
+  font-size: 11px;
+}
+
+.app-body.is-input-sidebar-collapsed .desktop-sidebar-panels {
+  display: none;
+}
+
 .main-workspace {
   min-width: 0;
 }

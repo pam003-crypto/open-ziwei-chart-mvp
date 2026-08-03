@@ -491,62 +491,62 @@ export function ChartView({ birthInfo }: ChartViewProps) {
 
   return (
     <section className="chart-workspace">
-      <ChartSummary astrolabe={astrolabe} birthInfo={birthInfo} calendar={calendar} />
+      <div className="desktop-result-layout">
+        <div className="desktop-chart-column">
+          <ChartSummary astrolabe={astrolabe} birthInfo={birthInfo} calendar={calendar} />
 
-      {birthInfo.note ? (
-        <p className="chart-note">
-          {birthInfo.note}
-        </p>
-      ) : null}
+          {birthInfo.note ? <p className="chart-note">{birthInfo.note}</p> : null}
 
-      <div className="desktop-main-panel">
-        <section className="time-dimension-section section-shell">
-          <div className="workspace-section-heading is-compact">
-            <div>
-              <p className="section-kicker">Time Dimension</p>
-              <h2 className="section-title">时间维度</h2>
+          <section className="time-dimension-section section-shell">
+            <div className="workspace-section-heading is-compact">
+              <div>
+                <p className="section-kicker">Time Dimension</p>
+                <h2 className="section-title">时间维度</h2>
+              </div>
+              <button className="text-action" type="button" onClick={() => setTimeSelection({})}>
+                重置选择
+              </button>
             </div>
-            <button className="text-action" type="button" onClick={() => setTimeSelection({})}>
-              重置选择
-            </button>
-          </div>
-          <DesktopHorizontalTimeNavigator
+            <DesktopHorizontalTimeNavigator
+              astrolabe={astrolabe}
+              transitDate={transitDate}
+              transitHour={transitHour}
+              activeScope={transitContext.scope}
+              timeSelection={timeSelection}
+              onTransitDateChange={setTransitDate}
+              onTransitHourChange={setTransitHour}
+              onTransitContextChange={setTransitContext}
+              onTimeSelectionChange={setTimeSelection}
+            />
+          </section>
+
+          <section className="chart-section section-shell">
+            <div className="workspace-section-heading is-compact">
+              <div>
+                <p className="section-kicker">Astrolabe</p>
+                <h2 className="section-title">命盘主体</h2>
+              </div>
+              <p className="section-helper">单击查看三方四正，双击查看宫位详情</p>
+            </div>
+            <div className="chart-board-container">
+              <div className="chart-frame chart-board">
+                {renderChartCanvas("mx-auto w-full")}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside className="desktop-interpretation-column" aria-label="命盘解读">
+          <InterpretationPanel
             astrolabe={astrolabe}
-            transitDate={transitDate}
-            transitHour={transitHour}
-            activeScope={transitContext.scope}
+            onPalaceHover={handleInterpretationPalaceHover}
+            onPalaceSelect={handleInterpretationPalaceSelect}
+            targetDate={transitDate}
             timeSelection={timeSelection}
-            onTransitDateChange={setTransitDate}
-            onTransitHourChange={setTransitHour}
-            onTransitContextChange={setTransitContext}
-            onTimeSelectionChange={setTimeSelection}
+            transitHour={transitHour}
+            selectedPalaceId={selectedPalaceIndex}
           />
-        </section>
-
-        <section className="chart-section section-shell">
-          <div className="workspace-section-heading is-compact">
-            <div>
-              <p className="section-kicker">Astrolabe</p>
-              <h2 className="section-title">命盘主体</h2>
-            </div>
-            <p className="section-helper">单击查看三方四正，双击查看宫位详情</p>
-          </div>
-          <div className="chart-board-container">
-            <div className="chart-frame chart-board">
-              {renderChartCanvas("mx-auto w-full")}
-            </div>
-          </div>
-        </section>
-
-        <InterpretationPanel
-          astrolabe={astrolabe}
-          onPalaceHover={handleInterpretationPalaceHover}
-          onPalaceSelect={handleInterpretationPalaceSelect}
-          targetDate={transitDate}
-          timeSelection={timeSelection}
-          transitHour={transitHour}
-          selectedPalaceId={selectedPalaceIndex}
-        />
+        </aside>
       </div>
 
       <PalaceZoomModal

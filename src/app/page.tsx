@@ -17,6 +17,7 @@ export default function Home() {
   const [formValue, setFormValue] = useState<BirthInfo | undefined>();
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<MobileView>("input");
+  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
 
   function showMobileChart() {
     setMobileView("chart");
@@ -55,21 +56,27 @@ export default function Home() {
     <main className="mobile-page app-shell">
       <AppHeader currentProfileName={birthInfo?.name} />
 
-      <div className="app-body">
+      <div className={isDesktopSidebarCollapsed ? "app-body is-input-sidebar-collapsed" : "app-body"}>
         <DesktopSidebar>
-          <div className={isMobileResultView ? "is-hidden-on-mobile" : ""}>
-            <BirthForm initialValue={formValue} onSubmit={handleSubmit} />
-            <div className="desktop-profile-manager">
-              <ProfileList
-                currentBirthInfo={birthInfo}
-                currentProfileId={currentProfileId}
-                onLoad={handleLoadProfile}
-                onSaved={handleSaved}
-              />
-            </div>
-            <details className="mobile-collapse-card mobile-profile-manager mobile-only">
-              <summary>命例管理</summary>
-              <div className="mobile-profile-actions">
+          <div className="desktop-sidebar-content">
+            {birthInfo ? (
+              <div className="desktop-sidebar-collapse-control">
+                <button
+                  aria-expanded={!isDesktopSidebarCollapsed}
+                  aria-label={isDesktopSidebarCollapsed ? "展开输入栏" : "收起输入栏"}
+                  className="text-action"
+                  title={isDesktopSidebarCollapsed ? "展开输入栏" : "收起输入栏"}
+                  type="button"
+                  onClick={() => setIsDesktopSidebarCollapsed((collapsed) => !collapsed)}
+                >
+                  {isDesktopSidebarCollapsed ? "展开" : "收起输入栏"}
+                </button>
+              </div>
+            ) : null}
+
+            <div className={`desktop-sidebar-panels ${isMobileResultView ? "is-hidden-on-mobile" : ""}`}>
+              <BirthForm initialValue={formValue} onSubmit={handleSubmit} />
+              <div className="desktop-profile-manager">
                 <ProfileList
                   currentBirthInfo={birthInfo}
                   currentProfileId={currentProfileId}
@@ -77,7 +84,18 @@ export default function Home() {
                   onSaved={handleSaved}
                 />
               </div>
-            </details>
+              <details className="mobile-collapse-card mobile-profile-manager mobile-only">
+                <summary>命例管理</summary>
+                <div className="mobile-profile-actions">
+                  <ProfileList
+                    currentBirthInfo={birthInfo}
+                    currentProfileId={currentProfileId}
+                    onLoad={handleLoadProfile}
+                    onSaved={handleSaved}
+                  />
+                </div>
+              </details>
+            </div>
           </div>
         </DesktopSidebar>
 

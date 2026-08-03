@@ -1,14 +1,14 @@
-import { MUTAGEN_MEANING, MUTAGEN_SCORE } from "./mutagenMeaning";
 import { DOMAIN_PALACES, normalizePalaceName, PALACE_MEANING } from "./palaceMeaning";
+import { getStarKeywords, normalizeStarName } from "./starMeaning";
 import {
-  BRIGHTNESS_SCORE,
-  getStarKeywords,
-  normalizeStarName,
-  SUPPORT_STAR_SCORE,
-  TOUGH_STAR_SCORE,
-} from "./starMeaning";
+  BRIGHTNESS_RULES,
+  getMainStarSystem,
+  getRiskFactors,
+  getSupportStructure,
+  SOURCE_LAYER_RULES,
+  ZIWEI_MUTAGEN_RULES,
+} from "./ziweiRules";
 import type {
-  DisplayStar,
   DomainKey,
   InterpretationInput,
   InterpretationLevel,
@@ -96,171 +96,83 @@ function getLevel(score: number, scope: InterpretationScope): InterpretationLeve
     return "综合";
   }
 
-  if (score >= 6) {
+  if (score >= 1.2) {
     return "偏顺";
   }
 
-  if (score >= 1) {
+  if (score >= -0.35) {
     return "中性";
   }
 
-  if (score > -4) {
+  if (score > -1.4) {
     return "需谨慎";
   }
 
   return "波动较大";
 }
 
-function starScore(star: DisplayStar): number {
-  const starName = normalizeStarName(star.name);
-  const brightnessScore = star.brightness ? BRIGHTNESS_SCORE[star.brightness] ?? 0 : 0;
-  const mutagenScore = star.mutagen ? MUTAGEN_SCORE[star.mutagen] : 0;
-  const supportScore = SUPPORT_STAR_SCORE[starName] ?? 0;
-  const toughScore = TOUGH_STAR_SCORE[starName] ?? 0;
-
-  if (starName === "禄") {
-    return 1.5 + brightnessScore + mutagenScore;
-  }
-
-  if (starName === "马") {
-    return 0.5 + brightnessScore + mutagenScore;
-  }
-
-  if (starName === "喜" || starName === "鸾") {
-    return 1 + brightnessScore + mutagenScore;
-  }
-
-  if (starName === "昌" || starName === "曲") {
-    return 0.8 + brightnessScore + mutagenScore;
-  }
-
-  if (starName === "魁" || starName === "钺") {
-    return 1.2 + brightnessScore + mutagenScore;
-  }
-
-  if (starName === "羊" || starName === "陀") {
-    return -1.2 + brightnessScore + mutagenScore;
-  }
-
-  return supportScore + toughScore + brightnessScore + mutagenScore;
-}
-
-function hasStar(signal: PalaceSignal, names: string[]): boolean {
-  return signal.stars.some((star) => names.includes(normalizeStarName(star.name)));
-}
-
 function hasToughStar(signal: PalaceSignal): boolean {
-  return signal.stars.some((star) => {
-    const name = normalizeStarName(star.name);
-    return Boolean(TOUGH_STAR_SCORE[name] || name === "羊" || name === "陀");
-  });
+  return getRiskFactors(signal.stars).length > 0;
 }
 
 function hasMutagen(signal: PalaceSignal, mutagen: Mutagen): boolean {
   return signal.mutagens.includes(mutagen);
 }
 
-function buildPalaceMutagenMessage(palaceName: string, mutagen: Mutagen): string {
-  const normalizedPalace = normalizePalaceName(palaceName);
-  const mutagenText = MUTAGEN_MEANING[mutagen].description;
+function buildPalaceMutagenMessage(signal: PalaceSignal, mutagen: Mutagen): string {
+  const palaceName = normalizePalaceName(signal.palaceName);
+  const palace = PALACE_MEANING[palaceName];
+  const rule = ZIWEI_MUTAGEN_RULES[mutagen];
+  const transformedStars = signal.stars
+    .filter((star) => star.mutagen === mutagen)
+    .map((star) => normalizeStarName(star.name));
+  const subject = transformedStars.length > 0 ? transformedStars.join("、") : "相关星曜";
+  const palaceAudit = palace?.auditQuestions[0] ?? "相关现实条件是否有独立证据承接？";
 
-  if (normalizedPalace === "官禄") {
-    if (mutagen === "禄") {
-      return "官禄见化禄，工作机会和资源支持感增强，适合主动汇报、推进项目或争取协作。";
-    }
-
-    if (mutagen === "权") {
-      return "官禄见化权，工作责任和推动压力会更明显，适合承担关键任务，也要避免过度强硬。";
-    }
-
-    if (mutagen === "科") {
-      return "官禄见化科，有利汇报、评审、考试、文书和专业形象，适合把流程整理清楚。";
-    }
-
-    return "官禄见化忌，工作上容易有流程卡顿、沟通误会或责任牵制，重要事项建议留痕确认。";
-  }
-
-  if (normalizedPalace === "财帛") {
-    if (mutagen === "禄") {
-      return "财帛见化禄，财务方面较容易出现资源流入、回款或收益线索，适合整理收入结构。";
-    }
-
-    if (mutagen === "权") {
-      return "财帛见化权，财务决策、支出安排和资源配置压力增加，需要主动管理现金流。";
-    }
-
-    if (mutagen === "科") {
-      return "财帛见化科，适合处理账目、合同、报销、凭证和稳定收益相关事务。";
-    }
-
-    return "财帛见化忌，财务上要谨慎冲动消费、借贷、人情开销和不确定投入。";
-  }
-
-  if (normalizedPalace === "夫妻") {
-    if (mutagen === "禄") {
-      return "夫妻见化禄，感情或合作互动更容易有温度，适合主动沟通和释放善意。";
-    }
-
-    if (mutagen === "权") {
-      return "夫妻见化权，关系中主导权和责任分配更突出，合作事务需要先说清边界。";
-    }
-
-    if (mutagen === "科") {
-      return "夫妻见化科，有利体面表达、沟通修复和合作关系的公开认可。";
-    }
-
-    return "夫妻见化忌，关系里容易有误解或旧问题反复，建议少试探，多把重点说清楚。";
-  }
-
-  if (normalizedPalace === "疾厄" && mutagen === "忌") {
-    return "疾厄见化忌，重点不是疾病判断，而是压力管理，建议关注睡眠、饮食、情绪和疲劳积累。";
-  }
-
-  if (normalizedPalace === "迁移") {
-    if (mutagen === "忌") {
-      return "迁移见化忌，外部环境、交通行程或对外沟通容易有压力，出行和合同细节宜提前确认。";
-    }
-
-    if (mutagen === "禄") {
-      return "迁移见化禄，外部机会、人脉连接和异地资源较容易被触发，适合向外拓展。";
-    }
-  }
-
-  if (normalizedPalace === "父母") {
-    if (mutagen === "科") {
-      return "父母见化科，有利文书、证件、考试、制度流程，也较容易得到长辈或上级帮助。";
-    }
-
-    if (mutagen === "忌") {
-      return "父母见化忌，文书、审批、上级沟通或制度流程可能较费心，建议预留时间。";
-    }
-  }
-
-  return `${palaceName}见化${mutagen}，${mutagenText}`;
+  return `${SOURCE_LABEL[signal.source]}${palaceName}中${subject}化${mutagen}，先按“${rule.mechanism}”处理；落在${palace?.title ?? "相关议题"}，需核对${palaceAudit}；${rule.audit}`;
 }
 
 function buildStarMessages(signal: PalaceSignal): string[] {
   const palaceName = normalizePalaceName(signal.palaceName);
+  const palace = PALACE_MEANING[palaceName];
+  const system = getMainStarSystem(signal.stars);
+  const support = getSupportStructure(signal.stars);
+  const riskFactors = getRiskFactors(signal.stars);
   const messages: string[] = [];
 
-  if (palaceName === "迁移" && hasStar(signal, ["天马", "马"])) {
-    messages.push("迁移宫见天马或流马，出行、搬动、外部机会和奔波感会增加，行程安排宜留弹性。");
+  if (system.names.length > 0) {
+    messages.push(
+      `${SOURCE_LABEL[signal.source]}${palaceName}以${system.label}为星系观察单位，性质轴为${system.axes.slice(0, 5).join("、")}；先核对${system.audits[0]}`,
+    );
   }
 
-  if (palaceName === "疾厄" && hasToughStar(signal)) {
-    messages.push("疾厄宫见煞曜，健康层面更适合看压力、作息和情绪管理，不作疾病结论。");
+  support.complete.forEach((rule) => {
+    messages.push(`${palaceName}见${rule.names.join("、")}成对会照，${rule.complete}；仍需由主星星系、宫位和现实条件承接。`);
+  });
+
+  support.incomplete.slice(0, 2).forEach(({ rule, present }) => {
+    messages.push(`${palaceName}单见${present}，${rule.incomplete}，不能据单星直接判断结果。`);
+  });
+
+  riskFactors.slice(0, 3).forEach(({ name, rule }) => {
+    messages.push(`${palaceName}见${name}，将其作为${rule.category}的复核项：${rule.audit}`);
+  });
+
+  const brightness = signal.stars
+    .filter((star) => star.type === "main" && star.brightness && BRIGHTNESS_RULES[star.brightness])
+    .slice(0, 2)
+    .map((star) => `${normalizeStarName(star.name)}${star.brightness}`);
+
+  if (brightness.length > 0) {
+    messages.push(`${brightness.join("、")}仅作环境适配修饰，不越过星系、宫位与辅煞四化单独裁决。`);
   }
 
   if (hasMutagen(signal, "忌") && hasToughStar(signal)) {
-    messages.push("本周期同时见化忌与煞曜，容易出现阻滞、冲突或计划变化，重要事情建议提前确认细节。");
+    messages.push("化忌与煞曜同见只表示复核等级提高，先检查现金、合同、权限、沟通、休息与安全条件，不推成确定事件。");
   }
 
-  if (palaceName === "夫妻" && hasStar(signal, ["红鸾", "天喜", "鸾", "喜"])) {
-    messages.push("关系宫位见喜庆或人缘星，互动意愿提升，适合安排沟通、见面或合作推进。");
-  }
-
-  if (palaceName === "官禄" && hasStar(signal, ["文昌", "文曲", "昌", "曲"])) {
-    messages.push("事业宫位见昌曲，文书、汇报、学习、考试、表达和材料整理更值得重视。");
+  if (signal.source !== "natal" && signal.stars.some((star) => star.type === "flow")) {
+    messages.push(`${SOURCE_LAYER_RULES[signal.source]}只用于观察${palace?.title ?? "该宫议题"}是否被触发，不能替代原局结构或现实证据。`);
   }
 
   return messages;
@@ -283,7 +195,7 @@ function buildFallbackMessage(signal: PalaceSignal): string {
 
 function buildMessages(signal: PalaceSignal): string[] {
   const mutagenMessages = signal.mutagens.map((mutagen) =>
-    buildPalaceMutagenMessage(signal.palaceName, mutagen),
+    buildPalaceMutagenMessage(signal, mutagen),
   );
   const starMessages = buildStarMessages(signal);
   const fallback = mutagenMessages.length === 0 && starMessages.length === 0 ? [buildFallbackMessage(signal)] : [];
@@ -294,8 +206,22 @@ function buildMessages(signal: PalaceSignal): string[] {
 function scoreSignal(signal: PalaceSignal, scope: InterpretationScope): PalaceSignal {
   const relationWeight = RELATION_WEIGHT[signal.relation];
   const timeWeight = TIME_WEIGHT[scope][signal.source];
-  const rawScore = signal.stars.reduce((score, star) => score + starScore(star), 0);
+  const system = getMainStarSystem(signal.stars);
+  const support = getSupportStructure(signal.stars);
+  const riskFactors = getRiskFactors(signal.stars);
+  const structureScore = Math.min(system.names.length, 2) * 0.06;
+  const supportScore =
+    support.complete.reduce((score, rule) => score + rule.weight, 0) +
+    support.incomplete.length * 0.03;
+  const riskScore = riskFactors.reduce((score, factor) => score + factor.rule.score, 0);
+  const mutagenScore = signal.mutagens.reduce(
+    (score, mutagen) => score + ZIWEI_MUTAGEN_RULES[mutagen].score,
+    0,
+  );
+  const triggerScore = signal.source !== "natal" && signal.stars.some((star) => star.type === "flow") ? 0.04 : 0;
+  const rawScore = structureScore + supportScore + riskScore + mutagenScore + triggerScore;
   const adjustedScore = rawScore * relationWeight * timeWeight;
+  const messages = buildMessages(signal);
 
   return {
     ...signal,
@@ -303,9 +229,9 @@ function scoreSignal(signal: PalaceSignal, scope: InterpretationScope): PalaceSi
     tags: unique([
       ...signal.tags,
       ...signal.stars.flatMap((star) => getStarKeywords(star.name)),
-      ...signal.messages,
+      ...messages,
     ]),
-    messages: buildMessages(signal),
+    messages,
   };
 }
 
@@ -331,7 +257,7 @@ function getActivatedPalaces(signals: PalaceSignal[]): string[] {
     sortSignals(signals)
       .filter((signal) => Math.abs(signal.score) >= 0.15 || signal.relation === "self")
       .map((signal) => normalizePalaceName(signal.palaceName)),
-  ).slice(0, 6);
+  ).slice(0, 5);
 }
 
 export function runRuleEngine(input: InterpretationInput): RuleEngineResult {

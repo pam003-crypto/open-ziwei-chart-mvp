@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { interpretWithRuleResult, resolveInterpretationScope } from "@/lib/interpretation/interpret";
+import type { TimeSelection, TimeSelectionItem } from "@/components/TransitControls";
 import type { AstrolabeResult } from "@/lib/astrolabe";
 import type {
   InterpretationResult,
@@ -14,15 +15,15 @@ type InterpretationPanelProps = {
   astrolabe: AstrolabeResult;
   onPalaceSelect?: (palaceName: string) => void;
   onPalaceHover?: (palaceName: string | null) => void;
-  transitContext: TransitContext;
   targetDate: Date;
   transitHour: number;
   selectedPalaceId?: number | string | null;
+  timeSelection?: TimeSelection;
   variant?: "desktop" | "mobile";
 };
 
 type SectionKey = keyof InterpretationResult["sections"];
-type InterpretationTab = "life" | "trine" | "pattern" | "decade" | "year";
+type InterpretationTab = "natal" | "pattern" | "decade" | "year" | "month" | "day" | "hour";
 
 const SECTION_LABELS: Array<{ key: SectionKey; title: string }> = [
   { key: "overview", title: "总体趋势" },
@@ -34,20 +35,39 @@ const SECTION_LABELS: Array<{ key: SectionKey; title: string }> = [
   { key: "advice", title: "行动建议" },
 ];
 
-const INTERPRETATION_TABS: Array<{ key: InterpretationTab; label: string }> = [
-  { key: "life", label: "命宫解读" },
-  { key: "trine", label: "三方四正" },
+const TAB_SECTIONS: Record<InterpretationTab, SectionKey[]> = {
+  natal: ["overview", "career", "wealth", "relationship", "health", "advice"],
+  pattern: ["career", "wealth", "relationship", "health"],
+  decade: ["overview", "career", "wealth", "relationship", "health", "risk", "advice"],
+  year: ["overview", "career", "wealth", "relationship", "health", "risk", "advice"],
+  month: ["overview", "career", "wealth", "relationship", "health", "risk", "advice"],
+  day: ["overview", "career", "wealth", "relationship", "health", "risk", "advice"],
+  hour: ["overview", "career", "wealth", "relationship", "health", "risk", "advice"],
+};
+
+type TabDefinition = {
+  key: InterpretationTab;
+  label: string;
+  selectionKey?: keyof TimeSelection;
+};
+
+const BASE_TABS: TabDefinition[] = [
+  { key: "natal", label: "命宫解读" },
   { key: "pattern", label: "格局分析" },
-  { key: "decade", label: "大运趋势" },
-  { key: "year", label: "流年分析" },
 ];
 
-const TAB_SECTIONS: Record<InterpretationTab, SectionKey[]> = {
-  life: ["overview", "relationship", "health"],
-  trine: ["overview", "career", "wealth"],
-  pattern: ["career", "wealth", "relationship", "health"],
-  decade: ["overview", "risk", "advice"],
-  year: ["overview", "career", "wealth", "risk", "advice"],
+const PERIOD_TABS: Array<Required<TabDefinition>> = [
+  { key: "decade", label: "大运解读", selectionKey: "decadal" },
+  { key: "year", label: "流年解读", selectionKey: "yearly" },
+  { key: "month", label: "流月解读", selectionKey: "monthly" },
+  { key: "day", label: "流日解读", selectionKey: "daily" },
+  { key: "hour", label: "流时解读", selectionKey: "hourly" },
+];
+
+const NATAL_CONTEXT: TransitContext = {
+  scope: "natal",
+  label: "本命",
+  keywords: ["本命", "命宫", "身宫", "三方四正", "四化"],
 };
 
 const PALACE_NAMES = [
@@ -64,6 +84,82 @@ const PALACE_NAMES = [
   "福德",
   "父母",
 ];
+
+function getAvailableTabs(timeSelection?: TimeSelection): TabDefinition[] {
+  return [
+    ...BASE_TABS,
+    ...PERIOD_TABS.filter(({ selectionKey }) => Boolean(timeSelection?.[selectionKey])),
+  ];
+}
+
+function getSelectedTimeItem(
+  tab: InterpretationTab,
+  timeSelection?: TimeSelection,
+): TimeSelectionItem | undefined {
+  const config = PERIOD_TABS.find((item) => item.key === tab);
+
+  return config ? timeSelection?.[config.selectionKey] ?? undefined : undefined;
+}
+
+function getSectionTitle(tab: InterpretationTab, key: SectionKey): string {
+  if (tab === "natal") {
+    const natalTitles: Partial<Record<SectionKey, string>> = {
+      overview: "本命综合分析",
+      career: "事业基础",
+      wealth: "财务基础",
+      relationship: "感情基础",
+      health: "健康 / 压力",
+    };
+
+    return natalTitles[key] ?? SECTION_LABELS.find((item) => item.key === key)?.title ?? key;
+  }
+
+  if (tab === "pattern" && key === "overview") {
+    return "格局主线";
+  }
+
+  return SECTION_LABELS.find((item) => item.key === key)?.title ?? key;
+}
+
+function getTabCopy(
+  tab: InterpretationTab,
+  result: InterpretationResult,
+  selectedItem?: TimeSelectionItem,
+): { helper: string; summary: string; insightTitle: string } {
+  if (tab === "natal") {
+    return {
+      helper: "本命摘要：从命宫、身宫与三方四正等原局结构展开。",
+      summary: result.summary,
+      insightTitle: "本命要点",
+    };
+  }
+
+  if (tab === "pattern") {
+    return {
+      helper: "格局分析：以主星星系、宫位关系、三方四正、辅煞与四化的交叉条件为依据。",
+      summary: `格局分析：${result.summary.replace(/^综合命盘解读：/, "")}`,
+      insightTitle: "格局要点",
+    };
+  }
+
+  const scopeLabel =
+    tab === "decade"
+      ? "当前大运"
+      : tab === "year"
+        ? "当前流年"
+        : tab === "month"
+          ? "当前流月"
+          : tab === "day"
+            ? "当前流日"
+            : "当前流时";
+  const selectedLabel = selectedItem?.label ?? "未选择";
+
+  return {
+    helper: `${scopeLabel}：${selectedLabel}`,
+    summary: result.summary,
+    insightTitle: `${scopeLabel}要点`,
+  };
+}
 
 function PalaceGroup({
   label,
@@ -224,28 +320,53 @@ export function InterpretationPanel({
   astrolabe,
   onPalaceHover,
   onPalaceSelect,
-  transitContext,
   targetDate,
+  timeSelection,
   transitHour,
   selectedPalaceId,
   variant = "desktop",
 }: InterpretationPanelProps) {
-  const [activeTab, setActiveTab] = useState<InterpretationTab>("life");
+  const [activeTab, setActiveTab] = useState<InterpretationTab>("natal");
+  const availableTabs = useMemo(
+    () => getAvailableTabs(timeSelection),
+    [
+      timeSelection?.decadal,
+      timeSelection?.yearly,
+      timeSelection?.monthly,
+      timeSelection?.daily,
+      timeSelection?.hourly,
+    ],
+  );
+  const effectiveTab = availableTabs.some((tab) => tab.key === activeTab) ? activeTab : "natal";
+  const selectedTimeItem = getSelectedTimeItem(effectiveTab, timeSelection);
+  const activeContext = selectedTimeItem?.context ?? NATAL_CONTEXT;
+  const activeScope =
+    effectiveTab === "natal" || effectiveTab === "pattern"
+      ? "natal"
+      : resolveInterpretationScope(activeContext);
+
+  useEffect(() => {
+    if (!availableTabs.some((tab) => tab.key === activeTab)) {
+      setActiveTab("natal");
+    }
+  }, [activeTab, availableTabs]);
+
   const interpretationData = useMemo(
     () =>
       interpretWithRuleResult({
         astrolabe,
-        scope: resolveInterpretationScope(transitContext),
+        scope: activeScope,
         targetDate,
         transitHour,
         selectedPalaceId,
-        transitContext,
+        transitContext: activeContext,
       }),
-    [astrolabe, transitContext, targetDate, transitHour, selectedPalaceId],
+    [astrolabe, activeContext, activeScope, targetDate, transitHour, selectedPalaceId],
   );
   const { result } = interpretationData;
-  const visibleSections = TAB_SECTIONS[activeTab];
-  const insightSections: SectionKey[] = ["career", "wealth", "relationship", "health", "risk", "advice"];
+  const visibleSections = TAB_SECTIONS[effectiveTab];
+  const tabCopy = getTabCopy(effectiveTab, result, selectedTimeItem);
+  const insightSections = visibleSections.filter((key) => key !== "overview");
 
   return (
     <section className={`interpretation-panel is-${variant}`}>
@@ -254,17 +375,17 @@ export function InterpretationPanel({
           <p className="section-kicker">Interpretation</p>
           <h2 className="section-title">命盘解读</h2>
           <p className="section-helper">
-            {result.title} · 基于本地规则引擎生成，仅作为传统命理参考。
+            {tabCopy.helper}
           </p>
         </div>
         <span className="interpretation-level">{result.level}</span>
       </div>
 
       <div className="interpretation-tabs" role="tablist" aria-label="解读维度">
-        {INTERPRETATION_TABS.map((tab) => (
+        {availableTabs.map((tab) => (
           <button
-            aria-selected={activeTab === tab.key}
-            className={activeTab === tab.key ? "is-active" : ""}
+            aria-selected={effectiveTab === tab.key}
+            className={effectiveTab === tab.key ? "is-active" : ""}
             key={tab.key}
             role="tab"
             type="button"
@@ -277,7 +398,7 @@ export function InterpretationPanel({
 
       <div className={variant === "mobile" ? "interpretation-workspace is-mobile" : "interpretation-workspace"}>
         <div className="interpretation-main-column">
-          <p className="interpretation-disclaimer">{result.summary}</p>
+          <p className="interpretation-disclaimer">{tabCopy.summary}</p>
 
           <div className="interpretation-palaces" aria-label="重点宫位">
             <PalaceGroup
@@ -295,7 +416,7 @@ export function InterpretationPanel({
           </div>
 
           <div className={variant === "mobile" ? "interpretation-grid is-accordion" : "interpretation-grid"}>
-            {SECTION_LABELS.filter(({ key }) => visibleSections.includes(key)).map(({ key, title }) => (
+            {visibleSections.map((key) => (
               <InterpretationCard
                 key={key}
                 onPalaceHover={onPalaceHover}
@@ -304,7 +425,7 @@ export function InterpretationPanel({
                 variant={variant}
                 section={{
                   ...result.sections[key],
-                  title,
+                  title: getSectionTitle(effectiveTab, key),
                 }}
               />
             ))}
@@ -316,10 +437,10 @@ export function InterpretationPanel({
           <aside className="key-insights-panel" aria-label="命盘要点提示">
             <div className="key-insights-heading">
               <p className="section-kicker">Key Insights</p>
-              <h3>要点提示</h3>
+              <h3>{tabCopy.insightTitle}</h3>
             </div>
             {insightSections.map((key) => {
-              const title = SECTION_LABELS.find((item) => item.key === key)?.title ?? key;
+              const title = getSectionTitle(effectiveTab, key);
               return (
                 <article className="key-insight-item" key={key}>
                   <span>{title}</span>

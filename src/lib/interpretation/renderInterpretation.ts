@@ -1,5 +1,11 @@
 import { normalizePalaceName, PALACE_MEANING } from "./palaceMeaning";
 import { normalizeStarName } from "./starMeaning";
+import {
+  getMainStarSystem,
+  getRiskFactors,
+  getSupportStructure,
+  ZIWEI_RULESET,
+} from "./ziweiRules";
 import type {
   DisplayStar,
   InterpretationResult,
@@ -185,10 +191,14 @@ function signalSignature(signal: PalaceSignal): string {
 function messagePriority(signal: PalaceSignal, signature: string): number {
   const relationBonus = signal.relation === "self" ? 8 : signal.relation === "triad" ? 5 : 3;
   const mutagenBonus = signature.startsWith("mutagen:") ? 12 : 0;
+  const systemBonus = signature.startsWith("system:") ? 9 : 0;
+  const supportBonus = signature.startsWith("support:") ? 5 : 0;
   const riskBonus =
     signature.includes("忌") || [...RISK_STARS].some((star) => signature.includes(star)) ? 10 : 0;
 
-  return Math.round(Math.abs(signal.score) * 10 + relationBonus + mutagenBonus + riskBonus);
+  return Math.round(
+    Math.abs(signal.score) * 10 + relationBonus + mutagenBonus + systemBonus + supportBonus + riskBonus,
+  );
 }
 
 function evidenceLimit(scope: InterpretationScope, domain: SectionDomain): number {
@@ -275,7 +285,7 @@ function getDomainText(
     }
 
     return {
-      conclusion: `${palaceLabel(palaceName)}为负分信号，表示该领域需要降低冒进。`,
+      conclusion: `${palaceLabel(palaceName)}出现需要复核的线索，表示该领域应降低冒进。`,
       advice: "建议先排查不确定因素，再决定是否推进。",
     };
   }
@@ -438,6 +448,51 @@ function buildMessage(
 function buildSignalMessages(domain: SectionDomain, signal: PalaceSignal): InterpretationMessage[] {
   const palaceName = normalizePalaceName(signal.palaceName);
   const prefix = `${sourceLabel(signal)}${relationLabel(signal)}触发${palaceLabel(palaceName)}`;
+  const system = getMainStarSystem(signal.stars);
+  const support = getSupportStructure(signal.stars);
+  const risks = getRiskFactors(signal.stars);
+  const mainStarNames = new Set(system.names);
+  const pairedSupportNames = new Set(support.complete.flatMap((rule) => rule.names));
+  const riskNames = new Set(risks.map(({ name }) => name));
+  const systemMessages =
+    system.names.length > 0
+      ? [
+          buildMessage(
+            domain,
+            signal,
+            `system:${system.names.join("+")}`,
+            `${prefix}，以${system.label}组成的星系为观察单位，性质轴为${system.axes
+              .slice(0, 4)
+              .join("、")}；先核对${system.audits[0] ?? "现实条件是否能承接"}`,
+          ),
+        ]
+      : [];
+  const supportMessages = [
+    ...support.complete.map((rule) =>
+      buildMessage(
+        domain,
+        signal,
+        `support:${rule.names.join("+")}`,
+        `${prefix}，见${rule.names.join("、")}形成呼应，${rule.complete}；仍需结合主星、宫位与现实条件判断。`,
+      ),
+    ),
+    ...support.incomplete.slice(0, 2).map(({ rule, present }) =>
+      buildMessage(
+        domain,
+        signal,
+        `support-single:${present}`,
+        `${prefix}，单见${present}，${rule.incomplete}，不据单星推断结果。`,
+      ),
+    ),
+  ];
+  const riskMessages = risks.slice(0, 3).map(({ name, rule }) =>
+    buildMessage(
+      domain,
+      signal,
+      `risk:${name}`,
+      `${prefix}，见${name}，作为${rule.category}的复核项：${rule.audit}`,
+    ),
+  );
   const mutagenMessages = signal.mutagens.map((mutagen) => {
     const mutagenStars = signal.stars.filter((star) => star.mutagen === mutagen);
     const starText =
@@ -457,7 +512,16 @@ function buildSignalMessages(domain: SectionDomain, signal: PalaceSignal): Inter
     );
   });
   const starMessages = signal.stars
-    .filter((star) => !star.mutagen && IMPORTANT_STARS.has(normalizeStarName(star.name)))
+    .filter((star) => {
+      const starName = normalizeStarName(star.name);
+      return (
+        !star.mutagen &&
+        IMPORTANT_STARS.has(starName) &&
+        !mainStarNames.has(starName) &&
+        !pairedSupportNames.has(starName) &&
+        !riskNames.has(starName)
+      );
+    })
     .map((star) => {
       const starName = normalizeStarName(star.name);
       return buildMessage(
@@ -468,8 +532,16 @@ function buildSignalMessages(domain: SectionDomain, signal: PalaceSignal): Inter
       );
     });
 
-  if (mutagenMessages.length > 0 || starMessages.length > 0) {
-    return [...mutagenMessages, ...starMessages];
+  const messages = [
+    ...systemMessages,
+    ...supportMessages,
+    ...riskMessages,
+    ...mutagenMessages,
+    ...starMessages,
+  ];
+
+  if (messages.length > 0) {
+    return messages;
   }
 
   return [
@@ -727,7 +799,7 @@ function scopeIntro(
       : "命宫、官禄、财帛等核心宫位";
 
   if (scope === "natal") {
-    return `综合命盘先看本命结构，主线落在${palaceText}，用于观察性格底色、行动方式和长期压力来源。`;
+    return `综合命盘先看本命结构，主线落在${palaceText}，用于观察行动方式、长期资源与压力管理，不把单颗星直接等同于结果。`;
   }
 
   if (scope === "decade") {
@@ -812,7 +884,7 @@ function buildAdviceSection(
       primaryPalaces.length > 0
         ? primaryPalaces
             .slice(0, 4)
-            .map((palace) => `${palace.palaceName}分数 ${palace.score}：${palace.reason}`)
+            .map((palace) => `${palace.palaceName}关注线索：${palace.reason}`)
         : ["当前周期未见明显集中触发。"],
     suggestions: (suggestions.length > 0
       ? suggestions
@@ -825,10 +897,10 @@ function buildSummary(result: RuleEngineResult, primaryPalaces: PalaceBrief[]): 
   const topPalaces = primaryPalaces.map((palace) => palace.palaceName).join("、") || "核心宫位";
 
   if (result.input.scope === "natal") {
-    return `${result.input.titleLabel}：主线宫位为${topPalaces}。以下内容基于本命宫位、星曜、四化与三方四正整理；点击上方大限、流年、流月、流日或流时后，会切换到对应周期解读。`;
+    return `${result.input.titleLabel}：主线宫位为${topPalaces}。依${ZIWEI_RULESET.label}，按${ZIWEI_RULESET.order.join(" → ")}整理；三方四正作为判据，不单列为独立结论。`;
   }
 
-  return `${result.input.titleLabel}：主线宫位为${topPalaces}，整体状态为${result.level}。以下内容基于本地规则引擎、宫位、星曜、四化和运限层级生成，仅作传统命理参考。`;
+  return `${result.input.titleLabel}：主线宫位为${topPalaces}，整体状态为${result.level}。依${ZIWEI_RULESET.label}，先核对原局与三方四正，再观察辅煞四化及当前运限触发，仅作传统命理参考。`;
 }
 
 export function renderInterpretation(result: RuleEngineResult): InterpretationResult {

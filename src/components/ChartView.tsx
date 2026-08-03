@@ -479,7 +479,7 @@ export function ChartView({ birthInfo }: ChartViewProps) {
             onPalaceSelect={handleInterpretationPalaceSelect}
             selectedPalaceId={selectedPalaceIndex}
             targetDate={transitDate}
-            transitContext={transitContext}
+            timeSelection={timeSelection}
             transitHour={transitHour}
             variant="mobile"
           />
@@ -542,8 +542,8 @@ export function ChartView({ birthInfo }: ChartViewProps) {
           astrolabe={astrolabe}
           onPalaceHover={handleInterpretationPalaceHover}
           onPalaceSelect={handleInterpretationPalaceSelect}
-          transitContext={transitContext}
           targetDate={transitDate}
+          timeSelection={timeSelection}
           transitHour={transitHour}
           selectedPalaceId={selectedPalaceIndex}
         />

@@ -75,22 +75,22 @@ function formatTitleLabel(
   }
 
   if (scope === "decade") {
-    return `${context?.label ?? "当前"}大限解读`;
+    return `${context?.label ?? "当前"} · 大运解读`;
   }
 
   if (scope === "month") {
-    return `${year}年${month}月流月解读`;
+    return `${year}年${context?.label ?? `${month}月`} · 流月解读`;
   }
 
   if (scope === "day") {
-    return `${year}年${month}月${day}日流日解读`;
+    return `${year}年${month}月${context?.label ?? `${day}日`} · 流日解读`;
   }
 
   if (scope === "hour") {
-    return `${year}年${month}月${day}日${context?.hourLabel ?? context?.label ?? ""}流时解读`;
+    return `${year}年${month}月${day}日${context?.hourLabel ?? context?.label ?? ""} · 流时解读`;
   }
 
-  return `${year}年流年解读`;
+  return `${context?.label ?? `${year}年`} · 流年解读`;
 }
 
 function toDisplayStar(

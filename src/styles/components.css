@@ -844,8 +844,8 @@ textarea.field-input {
 .interpretation-grid {
   display: grid;
   min-width: 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
 }
 
 .interpretation-card {
@@ -854,10 +854,6 @@ textarea.field-input {
   border-radius: var(--radius-control);
   background: var(--paper-card);
   padding: 14px;
-}
-
-.interpretation-card:first-child {
-  grid-column: 1 / -1;
 }
 
 .interpretation-card h3,

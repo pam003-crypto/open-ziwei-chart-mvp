@@ -135,43 +135,6 @@ select {
   white-space: nowrap;
 }
 
-.header-text-button,
-.header-account-button {
-  min-height: 34px;
-  border-radius: var(--radius-control);
-  cursor: pointer;
-  font-size: 12px;
-  transition: border-color var(--duration-normal), background-color var(--duration-normal), color var(--duration-normal);
-}
-
-.header-text-button {
-  border: 1px solid rgba(238, 228, 209, 0.16);
-  background: transparent;
-  color: #cfc0a8;
-  padding: 0 11px;
-}
-
-.header-account-button {
-  border: 1px solid var(--cinnabar-700);
-  background: var(--cinnabar-600);
-  color: #fffdf8;
-  font-weight: 700;
-  padding: 0 14px;
-}
-
-.header-text-button:hover,
-.header-text-button:focus-visible {
-  border-color: rgba(238, 228, 209, 0.34);
-  color: #fffaf0;
-  outline: none;
-}
-
-.header-account-button:hover,
-.header-account-button:focus-visible {
-  background: var(--cinnabar-700);
-  outline: none;
-}
-
 .app-body {
   display: grid;
   width: 100%;

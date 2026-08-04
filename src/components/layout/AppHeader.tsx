@@ -35,8 +35,6 @@ export function AppHeader({ currentProfileName }: AppHeaderProps) {
           <span className="current-profile-name">
             {currentProfileName || "未命名命例"}
           </span>
-          <button className="header-text-button" type="button">设置</button>
-          <button className="header-account-button" type="button">登录 / 注册</button>
         </div>
       </div>
     </header>

@@ -493,32 +493,34 @@ export function ChartView({ birthInfo }: ChartViewProps) {
     <section className="chart-workspace">
       <div className="desktop-result-layout">
         <div className="desktop-chart-column">
-          <ChartSummary astrolabe={astrolabe} birthInfo={birthInfo} calendar={calendar} />
+          <div className="desktop-chart-overview">
+            <ChartSummary astrolabe={astrolabe} birthInfo={birthInfo} calendar={calendar} compact />
+
+            <section className="time-dimension-section section-shell">
+              <div className="workspace-section-heading is-compact">
+                <div>
+                  <p className="section-kicker">Time Dimension</p>
+                  <h2 className="section-title">时间维度</h2>
+                </div>
+                <button className="text-action" type="button" onClick={() => setTimeSelection({})}>
+                  重置选择
+                </button>
+              </div>
+              <DesktopHorizontalTimeNavigator
+                astrolabe={astrolabe}
+                transitDate={transitDate}
+                transitHour={transitHour}
+                activeScope={transitContext.scope}
+                timeSelection={timeSelection}
+                onTransitDateChange={setTransitDate}
+                onTransitHourChange={setTransitHour}
+                onTransitContextChange={setTransitContext}
+                onTimeSelectionChange={setTimeSelection}
+              />
+            </section>
+          </div>
 
           {birthInfo.note ? <p className="chart-note">{birthInfo.note}</p> : null}
-
-          <section className="time-dimension-section section-shell">
-            <div className="workspace-section-heading is-compact">
-              <div>
-                <p className="section-kicker">Time Dimension</p>
-                <h2 className="section-title">时间维度</h2>
-              </div>
-              <button className="text-action" type="button" onClick={() => setTimeSelection({})}>
-                重置选择
-              </button>
-            </div>
-            <DesktopHorizontalTimeNavigator
-              astrolabe={astrolabe}
-              transitDate={transitDate}
-              transitHour={transitHour}
-              activeScope={transitContext.scope}
-              timeSelection={timeSelection}
-              onTransitDateChange={setTransitDate}
-              onTransitHourChange={setTransitHour}
-              onTransitContextChange={setTransitContext}
-              onTimeSelectionChange={setTimeSelection}
-            />
-          </section>
 
           <section className="chart-section section-shell">
             <div className="workspace-section-heading is-compact">

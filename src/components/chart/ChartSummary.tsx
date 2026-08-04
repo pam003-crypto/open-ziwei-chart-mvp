@@ -8,6 +8,7 @@ type ChartSummaryProps = {
   astrolabe: AstrolabeResult;
   birthInfo: BirthInfo;
   calendar: CalendarSummary;
+  compact?: boolean;
 };
 
 function SummaryField({ label, value }: { label: string; value: string }) {
@@ -19,13 +20,18 @@ function SummaryField({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function ChartSummary({ astrolabe, birthInfo, calendar }: ChartSummaryProps) {
+export function ChartSummary({
+  astrolabe,
+  birthInfo,
+  calendar,
+  compact = false,
+}: ChartSummaryProps) {
   return (
-    <section className="chart-summary-section">
+    <section className={compact ? "chart-summary-section is-compact" : "chart-summary-section"}>
       <div className="workspace-section-heading">
         <div>
           <p className="section-kicker">Ziwei Chart</p>
-          <h1 className="page-title">排盘结果</h1>
+          <h1 className={compact ? "section-title" : "page-title"}>排盘结果</h1>
         </div>
         <span className="summary-status">本命盘</span>
       </div>

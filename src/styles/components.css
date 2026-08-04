@@ -317,7 +317,7 @@ textarea.field-input {
   display: grid;
   min-width: 0;
   align-items: start;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
   gap: 16px;
 }
 
@@ -325,6 +325,18 @@ textarea.field-input {
   display: grid;
   min-width: 0;
   gap: 14px;
+}
+
+.desktop-chart-overview {
+  display: grid;
+  min-width: 0;
+  align-items: start;
+  grid-template-columns: minmax(220px, 0.82fr) minmax(0, 1.18fr);
+  gap: 14px;
+}
+
+.desktop-chart-overview > * {
+  min-width: 0;
 }
 
 .desktop-interpretation-column {
@@ -361,6 +373,48 @@ textarea.field-input {
   background: var(--paper-panel);
   box-shadow: var(--shadow-paper);
   padding: 18px;
+}
+
+.chart-summary-section.is-compact {
+  padding: 14px;
+}
+
+.chart-summary-section.is-compact .summary-status {
+  padding: 5px 8px;
+  font-size: 10px;
+}
+
+.chart-summary-section.is-compact .chart-summary-card {
+  min-height: 112px;
+  margin-top: 10px;
+}
+
+.chart-summary-section.is-compact .chart-summary-grid {
+  min-height: 112px;
+  padding: 10px 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.chart-summary-section.is-compact .summary-column {
+  gap: 4px;
+  padding: 0 7px;
+}
+
+.chart-summary-section.is-compact .summary-column.is-wide {
+  display: none;
+}
+
+.chart-summary-section.is-compact .summary-field dt {
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-summary-section.is-compact .summary-field dd {
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 1.2;
 }
 
 .summary-status {
@@ -450,6 +504,66 @@ textarea.field-input {
 
 .section-shell {
   padding: 14px;
+}
+
+.desktop-chart-overview .time-dimension-section {
+  padding: 10px 12px;
+}
+
+.desktop-chart-overview .time-dimension-section .section-kicker {
+  display: none;
+}
+
+.desktop-chart-overview .section-title {
+  margin-top: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.desktop-chart-overview .desktop-time-panel {
+  margin-top: 5px;
+}
+
+.desktop-chart-overview .current-time-bar {
+  min-height: 25px;
+  margin-bottom: 2px;
+  padding: 3px 7px;
+  font-size: 10px;
+}
+
+.desktop-chart-overview .desktop-time-row {
+  min-height: 25px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 6px;
+}
+
+.desktop-chart-overview .desktop-time-label {
+  font-size: 11px;
+}
+
+.desktop-chart-overview .desktop-time-options {
+  padding: 1px 0;
+  gap: 4px;
+  scrollbar-width: none;
+}
+
+.desktop-chart-overview .desktop-time-options::-webkit-scrollbar {
+  display: none;
+  height: 0;
+}
+
+.desktop-chart-overview .desktop-time-option {
+  min-width: 50px;
+  min-height: 21px;
+  padding: 1px 6px;
+}
+
+.desktop-chart-overview .desktop-time-option .primary {
+  font-size: 10px;
+}
+
+.desktop-chart-overview .desktop-time-option .secondary {
+  display: none;
 }
 
 .desktop-time-panel {

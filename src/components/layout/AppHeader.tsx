@@ -3,7 +3,6 @@
 import Image from "next/image";
 import headerTexture from "../../../public/assets/ink-paper-header.webp";
 import sealLogo from "../../../public/assets/ziwei-seal.webp";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV_ITEMS = ["命盘", "飞星", "四化", "流年", "大运", "合盘", "笔记"];
 
@@ -52,7 +51,6 @@ export function AppHeader({ currentProfileName }: AppHeaderProps) {
           <span className="current-profile-name">
             {currentProfileName || "未命名命例"}
           </span>
-          <ThemeToggle compact />
           <button className="header-text-button" type="button">设置</button>
           <button className="header-account-button" type="button">登录 / 注册</button>
         </div>

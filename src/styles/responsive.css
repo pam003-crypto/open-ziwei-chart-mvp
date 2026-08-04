@@ -156,11 +156,6 @@
     gap: 0;
   }
 
-  .theme-toggle {
-    min-width: 96px;
-    height: 32px;
-  }
-
   .app-body {
     display: block;
     width: 100%;
@@ -436,10 +431,6 @@
 
   .brand-lockup span {
     display: none;
-  }
-
-  .theme-toggle {
-    min-width: 88px;
   }
 
   .mobile-palace-cell.palace-cell {

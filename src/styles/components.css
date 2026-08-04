@@ -947,48 +947,6 @@ textarea.field-input {
   -webkit-line-clamp: 3;
 }
 
-.theme-toggle {
-  position: relative;
-  display: grid;
-  min-width: 108px;
-  height: 34px;
-  border: 1px solid rgba(238, 228, 209, 0.16);
-  border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.04);
-  padding: 3px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.theme-toggle-indicator {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 3px;
-  width: calc((100% - 6px) / 2);
-  border-radius: 5px;
-  background: #e8dcc8;
-  transition: transform var(--duration-normal) var(--ease-standard);
-}
-
-.theme-toggle-indicator[data-theme-position="rice-paper"] {
-  transform: translateX(100%);
-}
-
-.theme-toggle button {
-  position: relative;
-  z-index: 1;
-  border: 0;
-  background: transparent;
-  color: #bcad95;
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.theme-toggle button.is-active {
-  color: var(--ink-900);
-}
-
 .mobile-collapse-card {
   overflow: hidden;
 }

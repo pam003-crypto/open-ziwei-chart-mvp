@@ -4,8 +4,6 @@ import Image from "next/image";
 import headerTexture from "../../../public/assets/ink-paper-header.webp";
 import sealLogo from "../../../public/assets/ziwei-seal.webp";
 
-const NAV_ITEMS = ["命盘", "飞星", "四化", "流年", "大运", "合盘", "笔记"];
-
 type AppHeaderProps = {
   currentProfileName?: string;
 };
@@ -33,20 +31,6 @@ export function AppHeader({ currentProfileName }: AppHeaderProps) {
             <span>东方术数研究平台</span>
           </div>
         </div>
-
-        <nav className="primary-navigation" aria-label="主导航">
-          {NAV_ITEMS.map((item, index) => (
-            <button
-              aria-current={index === 0 ? "page" : undefined}
-              className={index === 0 ? "is-active" : ""}
-              key={item}
-              type="button"
-            >
-              {item}
-            </button>
-          ))}
-        </nav>
-
         <div className="header-actions">
           <span className="current-profile-name">
             {currentProfileName || "未命名命例"}
